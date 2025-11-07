@@ -180,18 +180,6 @@
 		};
 		reader.readAsArrayBuffer(file);
     });
-	
-	
-	function uploadToFirebase() {
-	if (matches.length === 0) {
-	  alert("Aucun match à importer !");
-	  return;
-	}
-	// ✅ Écriture dans Firebase
-	set(ref(db, 'matches'), matches)
-	  .then(() => alert("Liste des matchs importée avec succès dans Firebase !"))
-	  .catch(err => console.error(err));
-	}
 </script>
 <script type="module">
 	// Import the functions you need from the SDKs you need
@@ -216,6 +204,16 @@
 	// Initialize Firebase
 	const app = initializeApp(firebaseConfig);
 	const db = getDatabase(app);
+	function uploadToFirebase() {
+		if (matches.length === 0) {
+		  alert("Aucun match à importer !");
+		  return;
+		}
+		// ✅ Écriture dans Firebase
+		set(ref(db, 'matches'), matches)
+		  .then(() => alert("Liste des matchs importée avec succès dans Firebase !"))
+		  .catch(err => console.error(err));
+		}
 </script>
   <div id="forms"></div>
   <script>
@@ -495,3 +493,4 @@
   </script>
 </body>
 </html>
+
