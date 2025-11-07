@@ -142,7 +142,7 @@
 		</div>
 	</header>
   </div>
-  <script>
+ <script>
     let matches = [];
     document.getElementById('fileInput').addEventListener('change', (e) => {
 		const file = e.target.files[0];
@@ -175,14 +175,50 @@
 			}
 
 			localStorage.setItem('matches', JSON.stringify(matches));
+			uploadToFirebase();
 			renderForms();
 		};
 		reader.readAsArrayBuffer(file);
     });
-  </script>
+	
+	
+	function uploadToFirebase() {
+	if (matches.length === 0) {
+	  alert("Aucun match à importer !");
+	  return;
+	}
+	// ✅ Écriture dans Firebase
+	set(ref(db, 'matches'), matches)
+	  .then(() => alert("Liste des matchs importée avec succès dans Firebase !"))
+	  .catch(err => console.error(err));
+	}
+</script>
+<script type="module">
+	// Import the functions you need from the SDKs you need
+	import { initializeApp } from "firebase/app";
+	import { getDatabase } from "firebase/database";
+	// TODO: Add SDKs for Firebase products that you want to use
+	// https://firebase.google.com/docs/web/setup#available-libraries
+
+	// Your web app's Firebase configuration
+	// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+	const firebaseConfig = {
+		apiKey: "AIzaSyBk63PQRrlg6647pGw5Dof5-I-LCLexJrg",
+		authDomain: "tccs-live-score.firebaseapp.com",
+		databaseURL: "https://tccs-live-score-default-rtdb.europe-west1.firebasedatabase.app",
+		projectId: "tccs-live-score",
+		storageBucket: "tccs-live-score.firebasestorage.app",
+		messagingSenderId: "142574190845",
+		appId: "1:142574190845:web:654340ce971abe7cf8fe94",
+		measurementId: "G-E2Q9H3JRDG"
+	};
+
+	// Initialize Firebase
+	const app = initializeApp(firebaseConfig);
+	const db = getDatabase(app);
+</script>
   <div id="forms"></div>
   <script>
-
 	let timers = {}; // stocke les timers par match.id
 
 	function formatDuration(ms) {
