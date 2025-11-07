@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Saisie Scores - TCCS</title>
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/4.7.0/firebase.js"></script>
 <style>
 	body { 
 		font-family: Arial; 
@@ -180,22 +181,25 @@
 		};
 		reader.readAsArrayBuffer(file);
     });
-	 
+	
+	
 	function uploadToFirebase() {
-		if (matches.length === 0) {
-		  alert("Aucun match à importer !");
-		  return;
-		}
-		// ✅ Écriture dans Firebase
-		set(ref(db, 'matches'), matches)
-		  .then(() => alert("Liste des matchs importée avec succès dans Firebase !"))
-		  .catch(err => console.error(err));
-		}
+	if (matches.length === 0) {
+	  alert("Aucun match à importer !");
+	  return;
+	}
+	// ✅ Écriture dans Firebase
+	//set(ref(db, 'matches'), matches)
+	//  .then(() => alert("Liste des matchs importée avec succès dans Firebase !"))
+	//  .catch(err => console.error(err));
+	}
 </script>
 <script type="module">
 	// Import the functions you need from the SDKs you need
-	import { initializeApp } from "firebase/app";
-	import { getDatabase } from "firebase/database";
+	import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+	import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js";
+	import { getDatabase } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+ 
 	// TODO: Add SDKs for Firebase products that you want to use
 	// https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -494,5 +498,3 @@
   </script>
 </body>
 </html>
-
-
