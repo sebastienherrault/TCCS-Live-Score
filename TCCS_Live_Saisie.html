@@ -111,7 +111,7 @@
 <script type="module">
 	// Import the functions you need from the SDKs you need
 	import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-	import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+	import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
  
 	// TODO: Add SDKs for Firebase products that you want to use
 	// https://firebase.google.com/docs/web/setup#available-libraries
@@ -139,25 +139,44 @@
 			const matchesRef = ref(db, 'matches');
 			const snapshot = await get(matchesRef);
 			if (snapshot.exists()) {
-				const data = snapshot.val();
-				console.log("Matches récupérés :", data);
-				return data; // Tu peux ensuite utiliser ces données pour afficher les matchs
+				matches = snapshot.val();
+				console.log("Matches récupérés :", matches);
 			} else {
 				console.log("Aucune donnée trouvée dans Firebase.");
-				return [];
+				matches = [];
 			}
 		} catch (error) {
 		console.error("Erreur lors de la lecture des données :", error);
-		return [];
+		matches = [];
 		}
 	}
 
 	document.addEventListener('DOMContentLoaded', async () => {
-		matches = await ReadFromFirebase();
+		await ReadFromFirebase();
 		//localStorage.setItem('matches', JSON.stringify(matches));
 		renderForms();
 	});
 
+	let initialLoad = true;
+	const updateRef = ref(db, 'lastUpdate');
+	onValue(updateRef, (snapshot) => {
+		const timestamp = snapshot.val();
+		console.log("Mise à jour détectée :", timestamp);
+
+		if (initialLoad) {
+			initialLoad = false;
+			return; // ignore le premier appel
+		}
+
+		handleUpdate();
+	});
+	
+	async function handleUpdate() {
+		await ReadFromFirebase();
+		localStorage.setItem('matches', JSON.stringify(matches));
+		renderForms();
+	}
+	
 	function uploadToFirebase() {
 		if (matches.length === 0) {
 		  alert("Aucun match à importer !");
@@ -237,7 +256,6 @@
 		match.set3j1 = parseInt(document.getElementById(`set3j1-${id}`).value) || 0;
 		match.set3j2 = parseInt(document.getElementById(`set3j2-${id}`).value) || 0;
 		
-
 		if (setsJ1 >= 2) {
 			match.vainqueur = `joueur1`;
 			match.status = `terminé`;
@@ -462,7 +480,7 @@
         container.appendChild(div);
 		updateResult(match.id);
       });
-    }	
+    }
   </script>
 </body>
 </html>
