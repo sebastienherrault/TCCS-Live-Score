@@ -16,7 +16,7 @@
 
     <!-- Menu -->
     <div class="d-grid gap-3 col-6 mx-auto">
-	  <a href="TCCS_Live_Match.html" class="btn btn-primary btn-lg">🧾 Feuille de Matchs</a>
+	  <a href="TCCS_Live_Match.html" class="btn btn-primary btn-lg" onclick="checkPassword()">🧾 Feuille de Matchs</a>
 	  <a href="TCCS_Live_Saisie.html" class="btn btn-primary btn-lg">📝 Saisie des Résultats</a>
       <a href="TCCS_Live_Score.html" class="btn btn-success btn-lg">📺 Affichage des Scores</a>
     </div>
@@ -25,5 +25,17 @@
       <small>&copy; 2025 TCCS - Application web locale</small>
     </footer>
   </div>
+<script>
+function checkPassword() {
+  const password = prompt("Entrez le mot de passe pour accéder à la feuille de match :");
+  const correctPassword = "tennisTCCS"; // 🔒 à personnaliser
+
+  if (password === correctPassword) {
+    window.location.href = "feuille-de-match.html"; // 🔁 à adapter selon ton nom de fichier
+  } else {
+    alert("Mot de passe incorrect.");
+  }
+}
+</script>
 </body>
 </html>
