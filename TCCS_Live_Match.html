@@ -169,30 +169,6 @@
 	const db = getDatabase(app);
 	let matches = [];
 
-	async function ReadFromFirebase() {
-		try {
-			const matchesRef = ref(db, 'matches');
-			const snapshot = await get(matchesRef);
-			if (snapshot.exists()) {
-				const data = snapshot.val();
-				console.log("Matches récupérés :", data);
-				return data; // Tu peux ensuite utiliser ces données pour afficher les matchs
-			} else {
-				console.log("Aucune donnée trouvée dans Firebase.");
-				return [];
-			}
-		} catch (error) {
-		console.error("Erreur lors de la lecture des données :", error);
-		return [];
-		}
-	}
-
-	document.addEventListener('DOMContentLoaded', async () => {
-		matches = await ReadFromFirebase();
-		//localStorage.setItem('matches', JSON.stringify(matches));
-		renderForms();
-	});
-
     document.getElementById('fileInput').addEventListener('change', (e) => {
 		const file = e.target.files[0];
 		const reader = new FileReader();
@@ -238,7 +214,13 @@
 		set(ref(db, 'matches'), matches)
 		 // .then(() => alert("Liste des matchs importée avec succès dans Firebase !"))
 		  .catch(err => console.error(err));
+		  
+		const updatesRef = ref(db, 'lastUpdate');
+		set(updatesRef, Date.now());
 	}
+	
+	document.getElementById('fileInput').addEventListener('click', () => { fileInput.value = ''; });
+
   </script>
 </body>
 </html>
