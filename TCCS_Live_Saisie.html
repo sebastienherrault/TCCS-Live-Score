@@ -431,8 +431,12 @@
 		div.id = `match-${match.id}`;
         div.innerHTML = `
 		  <h3>${match.joueur1} vs ${match.joueur2}</h3>
-		  <p>Court: <input type="text" id="court-${match.id}" value="${match.court}" oninput="updateMatch(${match.id})">
-		  | Temps de jeu: <span class="clock" id="clock-${match.id}">${match.duration}</span></p>
+		  <p>Court: 
+		    <select id="court-${match.id}" onchange="updateMatch(${match.id})">
+		  	${[1, 2, 3, 4, 5, 6].map(n => `<option value="${n}" ${match.court == n ? 'selected' : ''}>${n}</option>`).join('')}
+		    </select>
+			<span>Temps de jeu: </span><span class="clock" id="clock-${match.id}">${match.duration}</span>
+		  </p>
 		  <table>
 			<thead>
 			  <tr><th></th><th>Set 1</th><th>Set 2</th><th>Set 3</th></tr>
