@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Saisie Scores - TCCS</title>
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<style>
+	body { 
+		font-family: Arial; 
+		background: #f4f4f4; 
+	}
+	header {
+	  position: relative;
+	  display: flex;
+	  justify-content: space-between;
+	  align-items: center;
+	  margin-bottom: 20px;
+	  padding: 15px;
+	  height: 100px; /* Ajuste selon la taille souhaitée */
+	  background: url('balle-de-tennis-balle-de-tennis-sur-le-terrain.jpg') center/cover no-repeat;
+	  color: white;
+	}
+
+	header::before {
+		content: "";
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-color: rgba(0, 0, 0, 0.0); /* Transparence */
+		z-index: 1;
+		border-radius: 8px;
+	}
+
+	header > * {
+		position: relative;
+		z-index: 2; /* Pour que le contenu passe au-dessus du fond */
+	}
+
+	.header-left {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 20px;
+	}
+
+	.header-actions {
+		display: flex;
+		gap: 20px;
+	}
+    header img {
+      max-height: 90px;
+	  justify-content: left;
+    }
+
+    header h1 {
+      font-size: 3em;
+      margin: 0;
+    }	
+	h1 {
+		font-size: 2em;
+		margin: 0;
+	}
+	.file-box {
+		border: 1px solid #ccc;
+		background-color: #f9f9f9;
+		padding: 10px;
+		border-radius: 8px;
+		width: 350px;
+		height: 80px;
+		box-sizing: border-box;
+		display: block;
+	}
+	.file-box h2 {
+		margin: 0;
+		font-size: 1em;
+		color: #333;
+	}
+	.file-box input[type="file"] {
+		display: block;
+		margin-top: 3px;
+		background-color: #007BFF;
+		color: white;
+		border: none;
+		padding: 8px 12px;
+		border-radius: 4px;
+		cursor: pointer;
+		font-size: 0.9em;
+	}
+	#forms {
+		margin-top: 20px;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+		gap: 15px;
+	}
+	.match-form {
+		background: white;
+		padding: 15px;
+		border-radius: 8px;
+		box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+	}
+	.match-form h3 {
+		margin-bottom: 10px;
+		color: #333;
+	}
+	table {
+		width: 100%;
+		border-collapse: collapse;
+		margin-top: 10px;
+	}
+	th, td {
+		border: 1px solid #ccc;
+		padding: 8px;
+		text-align: center;
+	}
+	th {
+		background: #007BFF;
+		color: white;
+	}
+	input[type="number"], input[type="text"] {
+		width: 50px;
+		text-align: center;
+	}
+	.clock {
+		text-align: right;
+	}	
+
+</style>
+</head>
+<body>
+  <div class="overlay">
+	<header>
+	  <div class="header-left">
+		<img src="TCCS.JPG" alt="Logo TCCS">
+		<h1>TCCS Chargement feuille de matchs</h1>
+	  </div>
+	  <div class="header-actions">
+		<div class="file-box">
+		  <h2>Importer la liste des matchs / Résultats</h2>
+		  <input type="file" id="fileInput" accept=".xls,.xlsx,.xlsm" />
+		</div>
+	</header>
+  </div>
+<div id="forms"></div>
+<script type="module">
+	// Import the functions you need from the SDKs you need
+	import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+	import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+ 
+	// TODO: Add SDKs for Firebase products that you want to use
+	// https://firebase.google.com/docs/web/setup#available-libraries
+
+	// Your web app's Firebase configuration
+	// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+	const firebaseConfig = {
+		apiKey: "AIzaSyBk63PQRrlg6647pGw5Dof5-I-LCLexJrg",
+		authDomain: "tccs-live-score.firebaseapp.com",
+		databaseURL: "https://tccs-live-score-default-rtdb.europe-west1.firebasedatabase.app",
+		projectId: "tccs-live-score",
+		storageBucket: "tccs-live-score.firebasestorage.app",
+		messagingSenderId: "142574190845",
+		appId: "1:142574190845:web:654340ce971abe7cf8fe94",
+		measurementId: "G-E2Q9H3JRDG"
+	};
+
+	// Initialize Firebase
+	const app = initializeApp(firebaseConfig);
+	const db = getDatabase(app);
+	let matches = [];
+
+	async function ReadFromFirebase() {
+		try {
+			const matchesRef = ref(db, 'matches');
+			const snapshot = await get(matchesRef);
+			if (snapshot.exists()) {
+				const data = snapshot.val();
+				console.log("Matches récupérés :", data);
+				return data; // Tu peux ensuite utiliser ces données pour afficher les matchs
+			} else {
+				console.log("Aucune donnée trouvée dans Firebase.");
+				return [];
+			}
+		} catch (error) {
+		console.error("Erreur lors de la lecture des données :", error);
+		return [];
+		}
+	}
+
+	document.addEventListener('DOMContentLoaded', async () => {
+		matches = await ReadFromFirebase();
+		//localStorage.setItem('matches', JSON.stringify(matches));
+		renderForms();
+	});
+
+    document.getElementById('fileInput').addEventListener('change', (e) => {
+		const file = e.target.files[0];
+		const reader = new FileReader();
+		reader.onload = function(evt) {
+			const data = new Uint8Array(evt.target.result);
+			const workbook = XLSX.read(data, { type: 'array' });
+			const sheet = workbook.Sheets[workbook.SheetNames[0]];
+			const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+			matches = [];
+			for (let i = 1; i < rows.length; i++) {
+			  if (!rows[i]|| rows[i].length < 3) continue;
+			  matches.push({
+				id: rows[i][0],
+				joueur1: rows[i][1],
+				joueur2: rows[i][2],
+				court: rows[i][3] || "",
+				set1j1: rows[i][4] || 0,
+				set1j2: rows[i][5] || 0,
+				set2j1: rows[i][6] || 0,
+				set2j2: rows[i][7] || 0,
+				set3j1: rows[i][8] || 0,
+				set3j2: rows[i][9] || 0,
+				status: rows[i][10] || "en attente",
+				startTime : rows[i][11] || "00:00:00",
+				duration : rows[i][12] || "00:00:00",
+				vainqueur : rows[i][13] || "",
+			  });
+			}
+
+			//localStorage.setItem('matches', JSON.stringify(matches));
+			uploadToFirebase();
+		};
+		reader.readAsArrayBuffer(file);
+    });
+
+	function uploadToFirebase() {
+		if (matches.length === 0) {
+		  alert("Aucun match à importer !");
+		  return;
+		}
+		// ✅ Écriture dans Firebase
+		set(ref(db, 'matches'), matches)
+		 // .then(() => alert("Liste des matchs importée avec succès dans Firebase !"))
+		  .catch(err => console.error(err));
+	}
+  </script>
+</body>
+</html>
