@@ -16,6 +16,7 @@
 		</div>
     </header>
 <div class="overlay">
+  <div class="no-match-message" id="no-match"></div>
   <div class="columns">
     <div class="left-column" id="match-status"></div>
     <div class="right-column">
@@ -63,40 +64,42 @@
     window.onload = updateHeaderClock;
 
     function loadMatches() {
-      const matchesRef = ref(db, 'matches');
-      onValue(matchesRef, (snapshot) => {
-        const data = snapshot.val();
-        const scoreboardsContainer = document.getElementById('scoreboards');
-        const statusContainer = document.getElementById('match-status');
+		const matchesRef = ref(db, 'matches');
+		onValue(matchesRef, (snapshot) => {
+			if(snapshot.exists())
+			{
+				const scoreboardsContainer = document.getElementById('scoreboards');
+				const statusContainer = document.getElementById('match-status');
 
-        scoreboardsContainer.innerHTML = '';
-        statusContainer.innerHTML = '';
-
-        // Tableaux des courts
-			for (let courtNum = 1; courtNum <= 6; courtNum++) {
-          const match = Object.values(data).find(m => m.court == courtNum.toString());
-          let courtName = courtNum === 5 ? `COURT ${courtNum} (Mimoun)` : courtNum === 6 ? `COURT ${courtNum} (Cerdan)` : `COURT ${courtNum} (Ext.)`;
+				scoreboardsContainer.innerHTML = '';
+				statusContainer.innerHTML = '';
 				
-				const div = document.createElement('div');
-				div.className = 'scoreboard';
+				const data = snapshot.val();
+				// Tableaux des courts
+				for (let courtNum = 1; courtNum <= 6; courtNum++) {
+					const match = Object.values(data).find(m => m.court == courtNum.toString()) || null;
+					let courtName = courtNum === 5 ? `COURT ${courtNum} (Mimoun)` : courtNum === 6 ? `COURT ${courtNum} (Cerdan)` : `COURT ${courtNum} (Ext.)`;
+						
+					const div = document.createElement('div');
+					div.className = 'scoreboard';
 
-				if (match) {
-					//const color = match.status === "terminé" ? "#00ff00" : "#ff3333";
-					const color = match.status === "terminé" 
-					? "#00ff00"           // vert
-					: match.status === "en cours" 
-					? "#27F2F5"           // bleu
-					: "#007BFF";          // rouge
+					if(match)
+					{
+						const color = match.status === "terminé" 
+						? "#00ff00"           // vert
+						: match.status === "en cours" 
+						? "#27F2F5"           // bleu
+						: "#007BFF";          // rouge
 
-					const colorSet1j1 = (match.set1j1 == 7 || (match.set1j1 >= 6 && match.set1j1 - match.set1j2 >= 2)) ? "#38F561" : "#F2E52C";
-					const colorSet2j1 = (match.set2j1 == 7 || (match.set2j1 >= 6 && match.set2j1 - match.set2j2 >= 2)) ? "#38F561" : "#F2E52C";
-					const colorSet3j1 = (match.set3j1 == 7 || (match.set3j1 >= 6 && match.set3j1 - match.set3j2 >= 2)) ? "#38F561" : "#F2E52C";
+						const colorSet1j1 = (match.set1j1 == 7 || (match.set1j1 >= 6 && match.set1j1 - match.set1j2 >= 2)) ? "#38F561" : "#F2E52C";
+						const colorSet2j1 = (match.set2j1 == 7 || (match.set2j1 >= 6 && match.set2j1 - match.set2j2 >= 2)) ? "#38F561" : "#F2E52C";
+						const colorSet3j1 = (match.set3j1 == 7 || (match.set3j1 >= 6 && match.set3j1 - match.set3j2 >= 2)) ? "#38F561" : "#F2E52C";
 
-					const colorSet1j2 = (match.set1j2 == 7 || (match.set1j2 >= 6 && match.set1j2 - match.set1j1 >= 2)) ? "#38F561" : "#F2E52C";
-					const colorSet2j2 = (match.set2j2 == 7 || (match.set2j2 >= 6 && match.set2j2 - match.set2j1 >= 2)) ? "#38F561" : "#F2E52C";
-					const colorSet3j2 = (match.set3j2 == 7 || (match.set3j2 >= 6 && match.set3j2 - match.set3j1 >= 2)) ? "#38F561" : "#F2E52C";
+						const colorSet1j2 = (match.set1j2 == 7 || (match.set1j2 >= 6 && match.set1j2 - match.set1j1 >= 2)) ? "#38F561" : "#F2E52C";
+						const colorSet2j2 = (match.set2j2 == 7 || (match.set2j2 >= 6 && match.set2j2 - match.set2j1 >= 2)) ? "#38F561" : "#F2E52C";
+						const colorSet3j2 = (match.set3j2 == 7 || (match.set3j2 >= 6 && match.set3j2 - match.set3j1 >= 2)) ? "#38F561" : "#F2E52C";
 
-					  div.innerHTML = `
+						div.innerHTML = `
 						<div class="header">
 						  <span class="court">${courtName}</span>
 						  <span class="clock" style="color: ${color};">${match.duration}</span>
@@ -125,71 +128,84 @@
 							</tr>
 						  </tbody>
 						</table>
-					  `;
-				} else {
-				  div.innerHTML = `
-					<div class="header">
-					  <span class="court">${courtName}</span>
-					  <span class="clock" style="color: #ff3333;">00:00:00</span>
-					</div>
-					<table>
-					  <thead>
-						<tr>
-						  <th></th>
-						  <th>SET 1</th>
-						  <th>SET 2</th>
-						  <th>SET 3</th>
-						</tr>
-					  </thead>
-					  <tbody>
-						<tr>
-						  <td class="label">Joueur 1</td>
-						  <td>0</td>
-						  <td>0</td>
-						  <td>0</td>
-						</tr>
-						<tr>
-						  <td class="label">Joueur 2</td>
-						  <td>0</td>
-						  <td>0</td>
-						  <td>0</td>
-						</tr>
-					  </tbody>
-					</table>
-				  `;
+						`;
+					}
+					else{
+						// Court sans match
+						div.innerHTML = `
+						<div class="header">
+						  <span class="court">${courtName}</span>
+						  <span class="clock" style="color: #ff3333;">00:00:00</span>
+						</div>
+						<table>
+						  <thead>
+							<tr>
+							  <th></th>
+							  <th>SET 1</th>
+							  <th>SET 2</th>
+							  <th>SET 3</th>
+							</tr>
+						  </thead>
+						  <tbody>
+							<tr>
+							  <td class="label">Joueur 1</td>
+							  <td>0</td>
+							  <td>0</td>
+							  <td>0</td>
+							</tr>
+							<tr>
+							  <td class="label">Joueur 2</td>
+							  <td>0</td>
+							  <td>0</td>
+							  <td>0</td>
+							</tr>
+						  </tbody>
+						</table>
+						`;						
+					}
+					scoreboardsContainer.appendChild(div);
 				}
-          scoreboardsContainer.appendChild(div);
-			}
-		
-        // Matchs terminés
-        const endedMatches = Object.values(data).filter(m => m.status === "terminé");
-        const endedContainer = document.createElement('div');
-        endedContainer.className = 'left-column';
-        endedContainer.innerHTML = `<h2 style="color:white;text-align:center;">Matchs terminés</h2>`;
-        endedMatches.forEach(match => {
-          const item = document.createElement('div');
-          item.className = 'ended-match';
-          item.innerHTML = match.vainqueur === "joueur1"
-            ? `🏆 ${match.joueur1} <span class="vs-box">VS</span> ${match.joueur2}`
-            : `${match.joueur1} <span class="vs-box">VS</span> ${match.joueur2} 🏆`;
-          endedContainer.appendChild(item);
-		});
+				
+				// Matchs terminés
+				const endedMatches = Object.values(data).filter(m => m.status === "terminé");
+				const endedContainer = document.createElement('div');
+				endedContainer.className = 'left-column';
+				endedContainer.innerHTML = `<h2 style="color:white;text-align:center;">Matchs terminés</h2>`;
+				endedMatches.forEach(match => {
+				  const item = document.createElement('div');
+				  item.className = 'ended-match';
+				  item.innerHTML = match.vainqueur === "joueur1"
+					? `🏆 ${match.joueur1} <span class="vs-box">VS</span> ${match.joueur2}`
+					: `${match.joueur1} <span class="vs-box">VS</span> ${match.joueur2} 🏆`;
+				  endedContainer.appendChild(item);
+				});
 
-        // Matchs en attente
-        const pendingMatches = Object.values(data).filter(m => m.status === "en attente");
-        const pendingContainer = document.createElement('div');
-        pendingContainer.className = 'left-column';
-        pendingContainer.innerHTML = `<h2 style="color:white;text-align:center;">Matchs en attente</h2>`
-        pendingMatches.forEach(match => {
-          const item = document.createElement('div');
-          item.className = 'pending-match';
-          item.innerHTML = `${match.joueur1} <span class="vs-box">VS</span> ${match.joueur2}`;
-          pendingContainer.appendChild(item);
-        });
+				// Matchs en attente
+				const pendingMatches = Object.values(data).filter(m => m.status === "en attente");
+				const pendingContainer = document.createElement('div');
+				pendingContainer.className = 'left-column';
+				pendingContainer.innerHTML = `<h2 style="color:white;text-align:center;">Matchs en attente</h2>`
+				pendingMatches.forEach(match => {
+				  const item = document.createElement('div');
+				  item.className = 'pending-match';
+				  item.innerHTML = `${match.joueur1} <span class="vs-box">VS</span> ${match.joueur2}`;
+				  pendingContainer.appendChild(item);
+				});					
+				statusContainer.appendChild(endedContainer);
+				statusContainer.appendChild(pendingContainer);	
+			}			
+			else {
+				const noMatchContainer = document.getElementById('no-match');
+				noMatchContainer.innerHTML = '';
 
-        statusContainer.appendChild(endedContainer);
-        statusContainer.appendChild(pendingContainer);		
-		
+
+				const div = document.createElement('div');
+				div.id = 'no-match-message';
+				div.textContent = 'Aucun match actuellement, revenez au prochain tournoi !';
+							
+				noMatchContainer.appendChild(div);
+			}	
+
       });
 	}
 
