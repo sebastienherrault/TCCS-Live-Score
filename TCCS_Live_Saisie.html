@@ -134,6 +134,15 @@
 	const db = getDatabase(app);
 	let matches = [];
 
+	function getDeviceId() {
+		let deviceId = localStorage.getItem('deviceId');
+		if (!deviceId) {
+			deviceId = crypto.randomUUID();
+			localStorage.setItem('deviceId', deviceId);
+		}
+		return deviceId;
+	}
+
 	async function ReadFromFirebase() {
 		try {
 			const matchesRef = ref(db, 'matches');
@@ -153,7 +162,6 @@
 
 	document.addEventListener('DOMContentLoaded', async () => {
 		await ReadFromFirebase();
-		//localStorage.setItem('matches', JSON.stringify(matches));
 		renderForms();
 	});
 
@@ -169,10 +177,19 @@
 		}
 		handleUpdate();
 	});
-	
+
+	const lastDataupdateRef = ref(db, 'lastDataUpdate');
+	onValue(lastDataupdateRef, (snapshot) => {
+		const user_id = snapshot.val();
+		
+		if (lastDataupdateRef.deviceId !== getDeviceId()) {
+			console.log("Mise à jour détectée :", user_id);	
+			handleUpdate();
+		}
+	});
+
 	async function handleUpdate() {
 		await ReadFromFirebase();
-		//localStorage.setItem('matches', JSON.stringify(matches));
 		renderForms();
 	}
 
@@ -180,12 +197,18 @@
 		const matchRef = ref(db, `matches/${match.id - 1}/${field}`); // index basé sur id
 		set(matchRef, value)
 		.catch(err => console.error(err));
+	
+		const updatesRef = ref(db, 'lastDataUpdate');
+		set(updatesRef, getDeviceId());
 	}
 
 	function uploadSingleMatchToFirebase(match) {
 		const matchRef = ref(db, `matches/${match.id - 1}`); // index basé sur id
 		set(matchRef, match)
 		.catch(err => console.error(err));
+
+		const updatesRef = ref(db, 'lastDataUpdate');
+		set(updatesRef, getDeviceId());
 	}
 
 	let timers = {}; // stocke les timers par match.id
