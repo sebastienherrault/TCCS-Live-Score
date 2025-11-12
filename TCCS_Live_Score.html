@@ -65,12 +65,15 @@
 
     function loadMatches() {
 		const matchesRef = ref(db, 'matches');
+		const noMatchContainer = document.getElementById('no-match');
+		const scoreboardsContainer = document.getElementById('scoreboards');
+		const statusContainer = document.getElementById('match-status');
+		
 		onValue(matchesRef, (snapshot) => {
 			if(snapshot.exists())
 			{
-				const scoreboardsContainer = document.getElementById('scoreboards');
-				const statusContainer = document.getElementById('match-status');
-
+				// Effacer les anciens contenus
+				noMatchContainer.innerHTML = '';				
 				scoreboardsContainer.innerHTML = '';
 				statusContainer.innerHTML = '';
 				
@@ -195,22 +198,23 @@
 				statusContainer.appendChild(pendingContainer);	
 			}			
 			else {
-				const noMatchContainer = document.getElementById('no-match');
-				noMatchContainer.innerHTML = '';
-
-
+				// Effacer les anciens contenus
+				// Effacer les anciens contenus
+				noMatchContainer.innerHTML = '';				
+				scoreboardsContainer.innerHTML = '';
+				statusContainer.innerHTML = '';
+				
 				const div = document.createElement('div');
 				div.id = 'no-match-message';
-				div.textContent = 'Aucun match actuellement, revenez au prochain tournoi !';
-							
+				div.textContent = 'Aucun match actuellement, revenez en période de tournoi !';
 				noMatchContainer.appendChild(div);
 			}	
 
       });
 	}
 
-    document.addEventListener('DOMContentLoaded', () => {
-      loadMatches();
+	document.addEventListener('DOMContentLoaded', () => {
+		loadMatches();
     });
 </script>
 </body>
