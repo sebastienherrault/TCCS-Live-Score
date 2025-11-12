@@ -212,7 +212,7 @@
 			}
 
 			//localStorage.setItem('matches', JSON.stringify(matches));
-			uploadToFirebase();
+			uploadMatchesToFirebase();
 			displayMatches();
 		};
 		reader.readAsArrayBuffer(file);
@@ -233,7 +233,7 @@
 		});
 	}
 
-	function uploadToFirebase() {
+	function uploadMatchesToFirebase() {
 		if (matches.length === 0) {
 		  alert("Aucun match à importer !");
 		  return;
