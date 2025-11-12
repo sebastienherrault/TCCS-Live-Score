@@ -132,3 +132,19 @@ th, td {
 	width : auto;	
 	border-radius: 8px; /* optionnel pour arrondir les coins */
 }
+
+#no-match-message {
+    font-size: 4em;           /* texte en gros */
+    font-style: oblique;      /* texte oblique */
+    font-weight: bold;        /* texte en gras */
+    color: #ff3333;           /* couleur rouge */
+    text-align: center;       /* centré */
+    margin-top: 40px;
+    animation: blink 1s infinite; /* clignotement */
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+}
