@@ -167,25 +167,25 @@
 			initialLoad = false;
 			return; // ignore le premier appel
 		}
-
 		handleUpdate();
 	});
 	
 	async function handleUpdate() {
 		await ReadFromFirebase();
-		localStorage.setItem('matches', JSON.stringify(matches));
+		//localStorage.setItem('matches', JSON.stringify(matches));
 		renderForms();
 	}
-	
-	function uploadToFirebase() {
-		if (matches.length === 0) {
-		  alert("Aucun match à importer !");
-		  return;
-		}
-		// ✅ Écriture dans Firebase
-		set(ref(db, 'matches'), matches)
-		 // .then(() => alert("Liste des matchs importée avec succès dans Firebase !"))
-		  .catch(err => console.error(err));
+
+	function uploadSingleMatchFieldToFirebase(match, field, value) {
+		const matchRef = ref(db, `matches/${match.id - 1}/${field}`); // index basé sur id
+		set(matchRef, value)
+		.catch(err => console.error(err));
+	}
+
+	function uploadSingleMatchToFirebase(match) {
+		const matchRef = ref(db, `matches/${match.id - 1}`); // index basé sur id
+		set(matchRef, match)
+		.catch(err => console.error(err));
 	}
 
 	let timers = {}; // stocke les timers par match.id
@@ -207,7 +207,7 @@
 			match.duration = formatDuration(elapsed);
 			document.getElementById(`clock-${match.id}`).textContent = `${match.duration}`;
 			//localStorage.setItem('matches', JSON.stringify(matches));
-			uploadToFirebase();
+			uploadSingleMatchFieldToFirebase(match, 'duration', match.duration);
 		}, 1000);
 	}
 
@@ -231,7 +231,7 @@
 	  return 0; // set non terminé ou égalité
 	}
 
-    window.updateMatch = function(id) {
+    window.updateMatch = function(id, field) {
 		const match = matches.find(m => m.id === id);
 		let setsJ1 = 0;
 		let setsJ2 = 0;
@@ -273,9 +273,36 @@
 			match.status = `en attente`;
 		}
 
-		updateResult(id);		
-		//localStorage.setItem('matches', JSON.stringify(matches));
-		uploadToFirebase();
+		updateResult(id);
+		
+		switch (field) {
+		  case "court":
+			uploadSingleMatchFieldToFirebase(match, "court", match.court);
+			break;
+		  case "set1j1":
+			uploadSingleMatchFieldToFirebase(match, "set1j1", match.set1j1);
+			break;
+		  case "set1j2":
+			uploadSingleMatchFieldToFirebase(match, "set1j2", match.set1j2);
+			break;
+		  case "set2j1":
+			uploadSingleMatchFieldToFirebase(match, "set2j1", match.set2j1);
+			break;
+		  case "set2j2":
+			uploadSingleMatchFieldToFirebase(match, "set2j2", match.set2j2);
+			break;
+		  case "set3j1":
+			uploadSingleMatchFieldToFirebase(match, "set3j1", match.set3j1);
+			break;
+		  case "set3j2":
+			uploadSingleMatchFieldToFirebase(match, "set3j2", match.set3j2);
+			break;
+		  default:
+			uploadSingleMatchToFirebase(match);
+		}
+		
+		uploadSingleMatchFieldToFirebase(match, "status", match.status);
+		uploadSingleMatchFieldToFirebase(match, "vainqueur", match.vainqueur);
     }
 
 	function updateResult(id) {
@@ -432,7 +459,7 @@
         div.innerHTML = `
 		  <h3>${match.joueur1} vs ${match.joueur2}</h3>
 		  <p>Court: 
-		    <select id="court-${match.id}" onchange="updateMatch(${match.id})">
+		    <select id="court-${match.id}" onchange="updateMatch(${match.id}, 'court')">
 		  	${["",1, 2, 3, 4, 5, 6].map(n => `<option value="${n}" ${match.court == n ? 'selected' : ''}>${n}</option>`).join('')}
 		    </select>
 			<span>Temps de jeu: </span><span class="clock" id="clock-${match.id}">${match.duration}</span>
@@ -445,34 +472,34 @@
 			  <tr>
 				<td>${match.joueur1}</td>
 				<td>
-				  <select id="set1j1-${match.id}" onchange="updateMatch(${match.id})">
+				  <select id="set1j1-${match.id}" onchange="updateMatch(${match.id}, 'set1j1')">
 					${[...Array(8).keys()].map(n => `<option value="${n}" ${match.set1j1 == n ? 'selected' : ''}>${n}</option>`).join('')}
 				  </select>
 				</td>
 				<td>
-				  <select id="set2j1-${match.id}" onchange="updateMatch(${match.id})">
+				  <select id="set2j1-${match.id}" onchange="updateMatch(${match.id}, 'set2j1')">
 					${[...Array(8).keys()].map(n => `<option value="${n}" ${match.set2j1 == n ? 'selected' : ''}>${n}</option>`).join('')}
 				  </select>
 				</td>
 				<td>
-				  <select id="set3j1-${match.id}" onchange="updateMatch(${match.id})">
+				  <select id="set3j1-${match.id}" onchange="updateMatch(${match.id}, 'set3j1')">
 					${[...Array(8).keys()].map(n => `<option value="${n}" ${match.set3j1 == n ? 'selected' : ''}>${n}</option>`).join('')}
 				  </select>
 				</td>
 			  <tr>
 				<td>${match.joueur2}</td>
 				<td>
-				  <select id="set1j2-${match.id}" onchange="updateMatch(${match.id})">
+				  <select id="set1j2-${match.id}" onchange="updateMatch(${match.id}, 'set1j2')">
 					${[...Array(8).keys()].map(n => `<option value="${n}" ${match.set1j2 == n ? 'selected' : ''}>${n}</option>`).join('')}
 				  </select>
 				</td>
 				<td>
-				  <select id="set2j2-${match.id}" onchange="updateMatch(${match.id})">
+				  <select id="set2j2-${match.id}" onchange="updateMatch(${match.id}, 'set2j2')">
 					${[...Array(8).keys()].map(n => `<option value="${n}" ${match.set2j2 == n ? 'selected' : ''}>${n}</option>`).join('')}
 				  </select>
 				</td>
 				<td>
-				  <select id="set3j2-${match.id}" onchange="updateMatch(${match.id})">
+				  <select id="set3j2-${match.id}" onchange="updateMatch(${match.id}, 'set3j2')">
 					${[...Array(8).keys()].map(n => `<option value="${n}" ${match.set3j2 == n ? 'selected' : ''}>${n}</option>`).join('')}
 				  </select>
 				</td>
