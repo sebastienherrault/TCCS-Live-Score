@@ -45,20 +45,20 @@
 	const db = getDatabase(app);
 
     function updateHeaderClock() {
-      const clock = document.getElementById("header-clock");
-      const now = new Date();
-      const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+		const clock = document.getElementById("header-clock");
+		const now = new Date();
+		const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 		const months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 				
-     const dayName = days[now.getDay()];
-      const day = now.getDate();
-      const month = months[now.getMonth()];
-      const year = now.getFullYear();
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const seconds = String(now.getSeconds()).padStart(2, '0');
-      clock.textContent = `${dayName} ${day} ${month} ${year} - ${hours}:${minutes}:${seconds}`;
-				}
+		const dayName = days[now.getDay()];
+		const day = now.getDate();
+		const month = months[now.getMonth()];
+		const year = now.getFullYear();
+		const hours = String(now.getHours()).padStart(2, '0');
+		const minutes = String(now.getMinutes()).padStart(2, '0');
+		const seconds = String(now.getSeconds()).padStart(2, '0');
+		clock.textContent = `${dayName} ${day} ${month} ${year} - ${hours}:${minutes}:${seconds}`;
+	}
     setInterval(updateHeaderClock, 1000);
     window.onload = updateHeaderClock;
 
@@ -81,11 +81,25 @@
 				div.className = 'scoreboard';
 
 				if (match) {
-            const color = match.status === "terminé" ? "#00ff00" : "#ff3333";
+					//const color = match.status === "terminé" ? "#00ff00" : "#ff3333";
+					const color = match.status === "terminé" 
+					? "#00ff00"           // vert
+					: match.status === "en cours" 
+					? "#27F2F5"           // bleu
+					: "#007BFF";          // rouge
+
+					const colorSet1j1 = (match.set1j1 == 7 || (match.set1j1 >= 6 && match.set1j1 - match.set1j2 >= 2)) ? "#38F561" : "#F2E52C";
+					const colorSet2j1 = (match.set2j1 == 7 || (match.set2j1 >= 6 && match.set2j1 - match.set2j2 >= 2)) ? "#38F561" : "#F2E52C";
+					const colorSet3j1 = (match.set3j1 == 7 || (match.set3j1 >= 6 && match.set3j1 - match.set3j2 >= 2)) ? "#38F561" : "#F2E52C";
+
+					const colorSet1j2 = (match.set1j2 == 7 || (match.set1j2 >= 6 && match.set1j2 - match.set1j1 >= 2)) ? "#38F561" : "#F2E52C";
+					const colorSet2j2 = (match.set2j2 == 7 || (match.set2j2 >= 6 && match.set2j2 - match.set2j1 >= 2)) ? "#38F561" : "#F2E52C";
+					const colorSet3j2 = (match.set3j2 == 7 || (match.set3j2 >= 6 && match.set3j2 - match.set3j1 >= 2)) ? "#38F561" : "#F2E52C";
+
 					  div.innerHTML = `
 						<div class="header">
 						  <span class="court">${courtName}</span>
-                <span class="clock" style="color: ${color};">${match.duration}</span>
+						  <span class="clock" style="color: ${color};">${match.duration}</span>
 						</div>
 						<table>
 						  <thead>
@@ -99,15 +113,15 @@
 						  <tbody>
 							<tr>
 							  <td class="label">${match.joueur1}</td>
-							  <td>${match.set1j1}</td>
-							  <td>${match.set2j1}</td>
-							  <td>${match.set3j1}</td>
+							  <td style="color: ${colorSet1j1};">${match.set1j1}</td>
+							  <td style="color: ${colorSet2j1};">${match.set2j1}</td>
+							  <td style="color: ${colorSet3j1};">${match.set3j1}</td>
 							</tr>
 							<tr>
 							  <td class="label">${match.joueur2}</td>
-							  <td>${match.set1j2}</td>
-							  <td>${match.set2j2}</td>
-							  <td>${match.set3j2}</td>
+							  <td style="color: ${colorSet1j2};">${match.set1j2}</td>
+							  <td style="color: ${colorSet2j2};">${match.set2j2}</td>
+							  <td style="color: ${colorSet3j2};">${match.set3j2}</td>
 							</tr>
 						  </tbody>
 						</table>
