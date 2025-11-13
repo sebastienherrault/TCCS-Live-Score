@@ -165,7 +165,7 @@
 	onValue(lastDataupdateRef, (snapshot) => {
 		const refreshNb = snapshot.val();
 		
-		if (refreshNb > dataRefresh()) {
+		if (refreshNb > dataRefresh) {
 			console.log("Mise à jour détectée :", user_id);
 			dataRefresh = refreshNb;
 			handleUpdate();
@@ -220,8 +220,8 @@
 		.catch(err => console.error(err));
 	
 		const lastDataupdateRef = ref(db, 'lastDataUpdate');
-		refreshNb++;
-		set(lastDataupdateRef, refreshNb);
+		dataRefresh++;
+		set(lastDataupdateRef, dataRefresh);
 	}
 	
 	// Ecriture d'un match complet dans Firebase
@@ -231,8 +231,8 @@
 		.catch(err => console.error(err));
 
 		const lastDataupdateRef = ref(db, 'lastDataUpdate');
-		refreshNb++;
-		set(lastDataupdateRef, refreshNb);
+		dataRefresh++;
+		set(lastDataupdateRef, dataRefresh);
 	}
 
 	// Formatage hh:mm:ss
