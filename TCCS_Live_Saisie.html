@@ -133,6 +133,7 @@
 	const app = initializeApp(firebaseConfig);
 	const db = getDatabase(app);
 	let matches = [];
+	let dataRefresh = 0;
 
 	// Creation ID unique pour chaque machine qui ouvre la page de saisie des resultat
 	function getDeviceId() {
@@ -162,10 +163,11 @@
 	// Force le rechargement des données dans le cas ou un autre utilisateur a modifié les resultats
 	const lastDataupdateRef = ref(db, 'lastDataUpdate');
 	onValue(lastDataupdateRef, (snapshot) => {
-		const user_id = snapshot.val();
+		const refreshNb = snapshot.val();
 		
-		if (user_id !== getDeviceId()) {
+		if (refreshNb > dataRefresh()) {
 			console.log("Mise à jour détectée :", user_id);
+			dataRefresh = refreshNb;
 			handleUpdate();
 		}
 	});
@@ -217,8 +219,9 @@
 		set(matchRef, value)
 		.catch(err => console.error(err));
 	
-		const updatesRef = ref(db, 'lastDataUpdate');
-		set(updatesRef, getDeviceId());
+		const lastDataupdateRef = ref(db, 'lastDataUpdate');
+		refreshNb++;
+		set(lastDataupdateRef, refreshNb);
 	}
 	
 	// Ecriture d'un match complet dans Firebase
@@ -227,8 +230,9 @@
 		set(matchRef, match)
 		.catch(err => console.error(err));
 
-		const updatesRef = ref(db, 'lastDataUpdate');
-		set(updatesRef, getDeviceId());
+		const lastDataupdateRef = ref(db, 'lastDataUpdate');
+		refreshNb++;
+		set(lastDataupdateRef, refreshNb);
 	}
 
 	// Formatage hh:mm:ss
