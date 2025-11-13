@@ -180,7 +180,8 @@
 	const app = initializeApp(firebaseConfig);
 	const db = getDatabase(app);
 	let matches = [];
-
+	
+	// Lecture des données depuis fichier Excel, enregistrement dans Firebase et affichage des matchs
     document.getElementById('fileInput').addEventListener('change', (e) => {
 		const file = e.target.files[0];
 		const reader = new FileReader();
@@ -218,6 +219,7 @@
 		reader.readAsArrayBuffer(file);
     });
 	
+	// Formatage pour affichage des matchs dans la page HTML
 	function displayMatches() {
 		const container = document.getElementById('forms');
 		container.innerHTML = ""; // Nettoyer avant d'afficher
@@ -232,7 +234,8 @@
 			container.appendChild(formDiv);
 		});
 	}
-
+	
+	// Ecriture de la table des matchs dans Firebase
 	function uploadMatchesToFirebase() {
 		if (matches.length === 0) {
 		  alert("Aucun match à importer !");
@@ -247,17 +250,23 @@
 		set(updatesRef, Date.now());
 	}
 
+	// Effacement de la table des matchs dans Firebase
 	function ClearDataFirebase() {
 		const lastUpdateRef = ref(db, 'lastUpdate');
+		const lastDataUpdateRef = ref(db, 'lastDataUpdate');
 		const matchesRef = ref(db, 'matches');
 		matches = [];
 		
 		remove(lastUpdateRef);
+		remove(lastDataUpdateRef);
 		remove(matchesRef);
 		displayMatches();
 	}
 
+	// Bouton chargement fichier Excel
 	document.getElementById('fileInput').addEventListener('click', () => { fileInput.value = ''; });
+	
+	// Bouton effacement de la table des matchs dans Firebase
 	document.getElementById('deleteBtn').addEventListener('click', () => { ClearDataFirebase();});
 	
   </script>
