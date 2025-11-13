@@ -134,6 +134,7 @@
 	const db = getDatabase(app);
 	let matches = [];
 
+	// Creation ID unique pour chaque machine qui ouvre la page de saisie des resultat
 	function getDeviceId() {
 		let deviceId = localStorage.getItem('deviceId');
 		if (!deviceId) {
@@ -143,6 +144,51 @@
 		return deviceId;
 	}
 
+	// Détection chargement d'un nouveau fichier Excel de liste des matches
+	let initialLoad = true;
+	const updateRef = ref(db, 'lastUpdate');
+	onValue(updateRef, (snapshot) => {
+		const timestamp = snapshot.val();
+		console.log("Mise à jour détectée :", timestamp);
+
+		if (initialLoad) {
+			initialLoad = false;
+			return; // ignore le premier appel
+		}
+		handleUpdate();
+	});
+
+	// Force le rechargement des données dans le cas ou un autre utilisateur a modifié les resultats
+	const lastDataupdateRef = ref(db, 'lastDataUpdate');
+	onValue(lastDataupdateRef, (snapshot) => {
+		const user_id = snapshot.val();
+		
+		if (lastDataupdateRef.deviceId !== getDeviceId()) {
+			console.log("Mise à jour détectée :", user_id);	
+			handleUpdate();
+		}
+	});
+
+	async function handleUpdate() {
+		await ReadFromFirebase();
+		renderForms();
+	}
+
+	// Force la mise à jour des chronos des matchs depuis la page d'affichage des scores
+	async function updateMatchClock() {
+		const matchesRef = ref(db, 'matches');
+		const snapshot = await get(matchesRef);
+		if (snapshot.exists()) {
+			const matches = snapshot.val();
+			matches.forEach(match => {
+				document.getElementById(`clock-${match.id}`).textContent = `${match.duration}`;
+			});
+		} 
+	}
+    setInterval(updateMatchClock, 1000);
+    window.onload = updateMatchClock;
+
+	// Lecture des données dans la base Firebase
 	async function ReadFromFirebase() {
 		try {
 			const matchesRef = ref(db, 'matches');
@@ -159,40 +205,12 @@
 		matches = [];
 		}
 	}
-
 	document.addEventListener('DOMContentLoaded', async () => {
 		await ReadFromFirebase();
 		renderForms();
 	});
 
-	let initialLoad = true;
-	const updateRef = ref(db, 'lastUpdate');
-	onValue(updateRef, (snapshot) => {
-		const timestamp = snapshot.val();
-		console.log("Mise à jour détectée :", timestamp);
-
-		if (initialLoad) {
-			initialLoad = false;
-			return; // ignore le premier appel
-		}
-		handleUpdate();
-	});
-
-	const lastDataupdateRef = ref(db, 'lastDataUpdate');
-	onValue(lastDataupdateRef, (snapshot) => {
-		const user_id = snapshot.val();
-		
-		if (lastDataupdateRef.deviceId !== getDeviceId()) {
-			console.log("Mise à jour détectée :", user_id);	
-			handleUpdate();
-		}
-	});
-
-	async function handleUpdate() {
-		await ReadFromFirebase();
-		renderForms();
-	}
-
+	// Ecriture d'une donnée d'un match dans Firebase
 	function uploadSingleMatchFieldToFirebase(match, field, value) {
 		const matchRef = ref(db, `matches/${match.id - 1}/${field}`); // index basé sur id
 		set(matchRef, value)
@@ -201,7 +219,8 @@
 		const updatesRef = ref(db, 'lastDataUpdate');
 		set(updatesRef, getDeviceId());
 	}
-
+	
+	// Ecriture d'un match complet dans Firebase
 	function uploadSingleMatchToFirebase(match) {
 		const matchRef = ref(db, `matches/${match.id - 1}`); // index basé sur id
 		set(matchRef, match)
@@ -211,8 +230,7 @@
 		set(updatesRef, getDeviceId());
 	}
 
-	let timers = {}; // stocke les timers par match.id
-
+	// Formatage hh:mm:ss
 	function formatDuration(ms) {
 		const totalSeconds = Math.floor(ms / 1000);
 		const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
@@ -220,32 +238,8 @@
 		const seconds = String(totalSeconds % 60).padStart(2, '0');
 		return `${hours}:${minutes}:${seconds}`;
 	}
-
-	function startTimer(match) {
-		if (timers[match.id]) return; // déjà en cours
-
-		match.startTime = formatDuration(Date.now() - (parseDuration(match.duration) || 0));
-		timers[match.id] = setInterval(() => {
-			const elapsed = Date.now() - parseDuration(match.startTime);
-			match.duration = formatDuration(elapsed);
-			document.getElementById(`clock-${match.id}`).textContent = `${match.duration}`;
-			//localStorage.setItem('matches', JSON.stringify(matches));
-			uploadSingleMatchFieldToFirebase(match, 'duration', match.duration);
-		}, 1000);
-	}
-
-	function stopTimer(match) {
-		if (timers[match.id]) {
-			clearInterval(timers[match.id]);
-			delete timers[match.id];
-		}
-	}
-
-	function parseDuration(durationStr) {
-		const [h, m, s] = durationStr.split(':').map(Number);
-		return ((h || 0) * 3600 + (m || 0) * 60 + (s || 0)) * 1000;
-	}
-
+	
+	// Algo de check gain du set
 	function isSetWon(j1, j2) {
 	  if (j1 >= 6 && j1 - j2 >= 2) return 1; // joueur 1 gagne
 	  if (j2 >= 6 && j2 - j1 >= 2) return 2; // joueur 2 gagne
@@ -254,6 +248,7 @@
 	  return 0; // set non terminé ou égalité
 	}
 
+	// Update Affichage ds match dans la page HTML
     window.updateMatch = function(id, field) {
 		const match = matches.find(m => m.id === id);
 		let setsJ1 = 0;
@@ -323,11 +318,11 @@
 		  default:
 			uploadSingleMatchToFirebase(match);
 		}
-		
 		uploadSingleMatchFieldToFirebase(match, "status", match.status);
 		uploadSingleMatchFieldToFirebase(match, "vainqueur", match.vainqueur);
     }
 
+	// Calcul et mise à jour des champs dans la table des matchs 
 	function updateResult(id) {
 		const match = matches.find(m => m.id === id);
 		let resultText = ``;
@@ -389,13 +384,18 @@
 		document.getElementById(`result-${id}`).textContent = resultText;
 
 		if (match.status === 'en cours') {
-			startTimer(match);
+			if (match.startTime !== "00:00:00") return; // déjà en cours
+
+			match.startTime = formatDuration(Date.now());
+			uploadSingleMatchFieldToFirebase(match, "startTime", match.startTime);
 		} 
-		else  {
-			stopTimer(match);
+		else if (match.status === 'terminé') {
+			match.startTime = 0;
+			uploadSingleMatchFieldToFirebase(match, "startTime", match.startTime);
 		}
 	}
-	
+
+	// Export la table des match au format Excel
 	function exportToExcel() {
 		const wb = XLSX.utils.book_new();
 		const headers = [
@@ -415,6 +415,7 @@
 		XLSX.writeFile(wb, "resultats_matchs.xlsx");
 	}
 
+	// Export la table des match au format CSV
 	function exportToCSV() {
 		const headers = [
 			["ID", "Joueur 1", "Joueur 2", "Court", "Set 1 J1", "Set 1 J2", "Set 2 J1", "Set 2 J2", "Set 3 J1", "Set 3 J2", "Statut", "Heure début", "Durée", "Vainqueur"]
@@ -441,7 +442,7 @@
 		document.body.removeChild(link);
 	}
 
-
+	// Export la table des match au format JSON
 	function saveJSON() {
 		const data = matches.map(m => ({
 			id: m.id,
@@ -471,7 +472,8 @@
 
 		URL.revokeObjectURL(url); // Nettoyage
 	}
-  
+	
+	// Formatage de l'affichage dans la page HTML
     function renderForms() {
       const container = document.getElementById('forms');
       container.innerHTML = '';
