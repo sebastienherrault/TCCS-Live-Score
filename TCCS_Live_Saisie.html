@@ -140,6 +140,7 @@
 		if (!deviceId) {
 			deviceId = crypto.randomUUID();
 			localStorage.setItem('deviceId', deviceId);
+			console.log("deviceId :", deviceId);
 		}
 		return deviceId;
 	}
@@ -163,8 +164,8 @@
 	onValue(lastDataupdateRef, (snapshot) => {
 		const user_id = snapshot.val();
 		
-		if (lastDataupdateRef.deviceId !== getDeviceId()) {
-			console.log("Mise à jour détectée :", user_id);	
+		if (user_id !== getDeviceId()) {
+			console.log("Mise à jour détectée :", user_id);
 			handleUpdate();
 		}
 	});
