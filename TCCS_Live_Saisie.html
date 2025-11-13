@@ -132,9 +132,21 @@
 	// Initialize Firebase
 	const app = initializeApp(firebaseConfig);
 	const db = getDatabase(app);
+	const updateRef = ref(db, 'lastUpdate');
+	const lastDataUpdateRef = ref(db, 'lastDataUpdate');
 	let matches = [];
 	let dataRefresh = 0;
-
+	
+	// Recupere la valeur du nbRefresh depuis Firebase
+	const lastDataUpdate = await get(lastDataUpdateRef);
+	if (lastDataUpdate.exists()) {
+		dataRefresh = lastDataUpdate.val();
+		console.log("Matches récupérés :", matches);
+	} else {
+		console.log("Aucune donnée trouvée dans Firebase.");
+		dataRefresh = 0;
+	}	
+	
 	// Creation ID unique pour chaque machine qui ouvre la page de saisie des resultat
 	function getDeviceId() {
 		let deviceId = localStorage.getItem('deviceId');
@@ -148,7 +160,6 @@
 
 	// Détection chargement d'un nouveau fichier Excel de liste des matches
 	let initialLoad = true;
-	const updateRef = ref(db, 'lastUpdate');
 	onValue(updateRef, (snapshot) => {
 		const timestamp = snapshot.val();
 		console.log("Mise à jour détectée :", timestamp);
@@ -161,8 +172,7 @@
 	});
 
 	// Force le rechargement des données dans le cas ou un autre utilisateur a modifié les resultats
-	const lastDataupdateRef = ref(db, 'lastDataUpdate');
-	onValue(lastDataupdateRef, (snapshot) => {
+	onValue(lastDataUpdateRef, (snapshot) => {
 		const refreshNb = snapshot.val();
 		
 		if (refreshNb > dataRefresh) {
@@ -218,10 +228,9 @@
 		const matchRef = ref(db, `matches/${match.id - 1}/${field}`); // index basé sur id
 		set(matchRef, value)
 		.catch(err => console.error(err));
-	
-		const lastDataupdateRef = ref(db, 'lastDataUpdate');
+
 		dataRefresh++;
-		set(lastDataupdateRef, dataRefresh);
+		set(lastDataUpdateRef, dataRefresh);
 	}
 	
 	// Ecriture d'un match complet dans Firebase
@@ -230,9 +239,8 @@
 		set(matchRef, match)
 		.catch(err => console.error(err));
 
-		const lastDataupdateRef = ref(db, 'lastDataUpdate');
 		dataRefresh++;
-		set(lastDataupdateRef, dataRefresh);
+		set(lastDataUpdateRef, dataRefresh);
 	}
 
 	// Formatage hh:mm:ss
