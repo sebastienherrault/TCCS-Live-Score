@@ -29,8 +29,8 @@
   </div>
 <script type="module">
 	import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
-
+	import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+	
 	const firebaseConfig = {
 		apiKey: "AIzaSyBk63PQRrlg6647pGw5Dof5-I-LCLexJrg",
 		authDomain: "tccs-live-score.firebaseapp.com",
@@ -44,8 +44,18 @@
 
 	const app = initializeApp(firebaseConfig);
 	const db = getDatabase(app);
+	const matchesRef = ref(db, 'matches');
+	let timers = {}; // stocke les timers par match.id
 
-    function updateHeaderClock() {
+	// Ecriture d'une donnée d'un match dans Firebase
+	function uploadSingleMatchFieldToFirebase(match, field, value) {
+		const matchfieldRef = ref(db, `matches/${match.id - 1}/${field}`); // index basé sur id
+		set(matchfieldRef, value)
+		.catch(err => console.error(err));
+	}
+
+    // Mise à jour et affichage de l'horlage du Header
+	function updateHeaderClock() {
 		const clock = document.getElementById("header-clock");
 		const now = new Date();
 		const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
@@ -63,8 +73,72 @@
     setInterval(updateHeaderClock, 1000);
     window.onload = updateHeaderClock;
 
+	// Formatage hh:mm:ss
+	function formatDuration(ms) {
+		const totalSeconds = Math.floor(ms / 1000);
+		const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+		const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+		const seconds = String(totalSeconds % 60).padStart(2, '0');
+		return `${hours}:${minutes}:${seconds}`;
+	}
+
+	// Formatage en ms
+	function parseDuration(durationStr) {
+		const [h, m, s] = durationStr.split(':').map(Number);
+		return ((h || 0) * 3600 + (m || 0) * 60 + (s || 0)) * 1000;
+	}
+
+	// MAJ et enregistrement des timers de match dans Firebase
+	function startTimer(match) {
+		if (timers[match.id]) return;
+
+		timers[match.id] = setInterval(() => {
+			const elapsed = Date.now() - parseDuration(match.startTime);
+			match.duration = formatDuration(elapsed);
+			uploadSingleMatchFieldToFirebase(match, "duration", match.duration);
+			
+			const matchClockUpdateRef = ref(db, 'matchClockUpdate');
+			set(matchClockUpdateRef, match.id);
+		}, 1000);
+	}
+	
+	// RAZ et enregistrement des timers de match dans Firebase
+	function stopTimer(match) {
+		if (timers[match.id]) {
+			clearInterval(timers[match.id]);
+			delete timers[match.id];
+		}
+	}
+
+	// Gestion timers de match dans Firebase (@1s)
+	async function updateMatchClock() {
+		const snapshot = await get(matchesRef);
+		if (snapshot.exists()) {
+			const matches = snapshot.val();
+			matches.forEach(match => {
+				if (match.status === 'en cours') {
+					startTimer(match);
+				} 
+				else  {
+					stopTimer(match);
+				}
+			});
+		} 
+	}
+    setInterval(updateMatchClock, 1000);
+    window.onload = updateMatchClock;
+
+	// Algo de check gain du set
+	function isSetWon(j1, j2) {
+	  if (j1 >= 6 && j1 - j2 >= 2) return 1; // joueur 1 gagne
+	  if (j2 >= 6 && j2 - j1 >= 2) return 2; // joueur 2 gagne
+	  if (j1 === 7) return 1;
+	  if (j2 === 7) return 2;
+	  return 0; // set non terminé ou égalité
+	}
+	
+	// Update & Formatage pour affichage des match dans la page HTML
     function loadMatches() {
-		const matchesRef = ref(db, 'matches');
 		const noMatchContainer = document.getElementById('no-match');
 		const scoreboardsContainer = document.getElementById('scoreboards');
 		const statusContainer = document.getElementById('match-status');
@@ -77,10 +151,10 @@
 				scoreboardsContainer.innerHTML = '';
 				statusContainer.innerHTML = '';
 				
-				const data = snapshot.val();
+				const matches = snapshot.val();
 				// Tableaux des courts
 				for (let courtNum = 1; courtNum <= 6; courtNum++) {
-					const match = Object.values(data).find(m => m.court == courtNum.toString()) || null;
+					const match = Object.values(matches).find(m => m.court == courtNum.toString()) || null;
 					let courtName = courtNum === 5 ? `COURT ${courtNum} (Mimoun)` : courtNum === 6 ? `COURT ${courtNum} (Cerdan)` : `COURT ${courtNum} (Ext.)`;
 						
 					const div = document.createElement('div');
@@ -93,7 +167,7 @@
 						: match.status === "en cours" 
 						? "#27F2F5"           // bleu
 						: "#007BFF";          // rouge
-
+						
 						const colorSet1j1 = (match.set1j1 == 7 || (match.set1j1 >= 6 && match.set1j1 - match.set1j2 >= 2)) ? "#38F561" : "#F2E52C";
 						const colorSet2j1 = (match.set2j1 == 7 || (match.set2j1 >= 6 && match.set2j1 - match.set2j2 >= 2)) ? "#38F561" : "#F2E52C";
 						const colorSet3j1 = (match.set3j1 == 7 || (match.set3j1 >= 6 && match.set3j1 - match.set3j2 >= 2)) ? "#38F561" : "#F2E52C";
@@ -170,7 +244,7 @@
 				}
 				
 				// Matchs terminés
-				const endedMatches = Object.values(data).filter(m => m.status === "terminé");
+				const endedMatches = Object.values(matches).filter(m => m.status === "terminé");
 				const endedContainer = document.createElement('div');
 				endedContainer.className = 'left-column';
 				endedContainer.innerHTML = `<h2 style="color:white;text-align:center;">Matchs terminés</h2>`;
@@ -184,7 +258,7 @@
 				});
 
 				// Matchs en attente
-				const pendingMatches = Object.values(data).filter(m => m.status === "en attente");
+				const pendingMatches = Object.values(matches).filter(m => m.status === "en attente");
 				const pendingContainer = document.createElement('div');
 				pendingContainer.className = 'left-column';
 				pendingContainer.innerHTML = `<h2 style="color:white;text-align:center;">Matchs en attente</h2>`
@@ -199,7 +273,6 @@
 			}			
 			else {
 				// Effacer les anciens contenus
-				// Effacer les anciens contenus
 				noMatchContainer.innerHTML = '';				
 				scoreboardsContainer.innerHTML = '';
 				statusContainer.innerHTML = '';
@@ -208,14 +281,13 @@
 				div.id = 'no-match-message';
 				div.textContent = 'Aucun match actuellement, revenez en période de tournoi !';
 				noMatchContainer.appendChild(div);
-			}	
-
+			}
       });
 	}
 
-	document.addEventListener('DOMContentLoaded', () => {
-		loadMatches();
-    });
+	document.addEventListener('DOMContentLoaded', () => { 
+		loadMatches(); 
+	});
 </script>
 </body>
 </html>
