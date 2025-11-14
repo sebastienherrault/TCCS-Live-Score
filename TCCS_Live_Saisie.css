@@ -1,0 +1,92 @@
+body { 
+	font-family: Arial; 
+	background: #f4f4f4; 
+}
+header {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 15px;
+  height: 100px; /* Ajuste selon la taille souhaitée */
+  background: url('balle-de-tennis-balle-de-tennis-sur-le-terrain.jpg') center/cover no-repeat;
+  color: white;
+}
+
+header::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.0); /* Transparence */
+	z-index: 1;
+	border-radius: 8px;
+}
+
+header > * {
+	position: relative;
+	z-index: 2; /* Pour que le contenu passe au-dessus du fond */
+}
+
+.header-left {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 20px;
+}
+
+header img {
+  max-height: 90px;
+  justify-content: left;
+}
+
+header h1 {
+  font-size: 3em;
+  margin: 0;
+}	
+h1 {
+	font-size: 2em;
+	margin: 0;
+}
+#forms {
+	margin-top: 20px;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+	gap: 15px;
+}
+.match-form {
+	background: white;
+	padding: 15px;
+	border-radius: 8px;
+	box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.match-form h3 {
+	margin-bottom: 10px;
+	font-size: 1em;
+	color: #333;
+}
+table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 10px;
+}
+th, td {
+	border: 1px solid #ccc;
+	padding: 8px;
+	text-align: center;
+	font-size: 12px;
+}
+th {
+	background: #007BFF;
+	color: white;
+}
+input[type="number"], input[type="text"] {
+	width: 50px;
+	text-align: center;
+}
+.clock {
+	text-align: right;
+}
