@@ -2,101 +2,9 @@
 <html lang="fr">
 <head>
 	<meta charset="UTF-8" name="viewport" content="width=device-width,initial-scale=1.0">
+	<link rel="stylesheet" href="TCCS_Live_Saisie.css">
 	<title>Saisie Scores - TCCS</title>
 	<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-	<style>
-		body { 
-			font-family: Arial; 
-			background: #f4f4f4; 
-		}
-		header {
-		  position: relative;
-		  display: flex;
-		  justify-content: space-between;
-		  align-items: center;
-		  margin-bottom: 20px;
-		  padding: 15px;
-		  height: 100px; /* Ajuste selon la taille souhaitée */
-		  background: url('balle-de-tennis-balle-de-tennis-sur-le-terrain.jpg') center/cover no-repeat;
-		  color: white;
-		}
-
-		header::before {
-			content: "";
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-			background-color: rgba(0, 0, 0, 0.0); /* Transparence */
-			z-index: 1;
-			border-radius: 8px;
-		}
-
-		header > * {
-			position: relative;
-			z-index: 2; /* Pour que le contenu passe au-dessus du fond */
-		}
-
-		.header-left {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			gap: 20px;
-		}
-
-		header img {
-		  max-height: 90px;
-		  justify-content: left;
-		}
-
-		header h1 {
-		  font-size: 3em;
-		  margin: 0;
-		}	
-		h1 {
-			font-size: 2em;
-			margin: 0;
-		}
-		#forms {
-			margin-top: 20px;
-			display: grid;
-			grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-			gap: 15px;
-		}
-		.match-form {
-			background: white;
-			padding: 15px;
-			border-radius: 8px;
-			box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-		}
-		.match-form h3 {
-			margin-bottom: 10px;
-			color: #333;
-		}
-		table {
-			width: 100%;
-			border-collapse: collapse;
-			margin-top: 10px;
-		}
-		th, td {
-			border: 1px solid #ccc;
-			padding: 8px;
-			text-align: center;
-			font-size: 12px;
-		}
-		th {
-			background: #007BFF;
-			color: white;
-		}
-		input[type="number"], input[type="text"] {
-			width: 50px;
-			text-align: center;
-		}
-		.clock {
-			text-align: right;
-		}	
-	</style>
 </head>
 <body>
   <div class="overlay">
@@ -155,12 +63,12 @@
 	let initialLoad = true;
 	onValue(updateRef, (snapshot) => {
 		const timestamp = snapshot.val();
-		console.log("Nouvel Excel détectée :", timestamp);
 
 		if (initialLoad) {
 			initialLoad = false;
 			return; // ignore le premier appel
 		}
+		console.log("Nouvel Excel détectée :", timestamp);
 		handleUpdate();
 		GetNbDataRefresh();
 	});
@@ -259,9 +167,26 @@
 	// Update Affichage ds match dans la page HTML
     window.updateMatch = function(id, field) {
 		const match = matches.find(m => m.id === id);
-		let setsJ1 = 0;
-		let setsJ2 = 0;
+		const div = document.querySelector(`#match-${id}`);
+		let setsJ1 = 0, setsJ2 = 0;
+		let resultText = ``;
 		
+		const j1Cells = div.querySelectorAll('.joueur1');
+		const j2Cells = div.querySelectorAll('.joueur2');
+		
+		j1Cells.forEach(cell => cell.style.fontWeight = 'normal');
+		j2Cells.forEach(cell => cell.style.fontWeight = 'normal');
+			
+		match.court = document.getElementById(`court-${id}`).value;
+		match.set1j1 = parseInt(document.getElementById(`set1j1-${id}`).value) || 0;
+		match.set1j2 = parseInt(document.getElementById(`set1j2-${id}`).value) || 0;
+		match.set2j1 = parseInt(document.getElementById(`set2j1-${id}`).value) || 0;
+		match.set2j2 = parseInt(document.getElementById(`set2j2-${id}`).value) || 0;
+		match.set3j1 = parseInt(document.getElementById(`set3j1-${id}`).value) || 0;
+		match.set3j2 = parseInt(document.getElementById(`set3j2-${id}`).value) || 0;
+
+		console.log("updateMatch (", field, ") : ", match);
+
 		const sets = [
 			[match.set1j1, match.set1j2],
 			[match.set2j1, match.set2j2],
@@ -273,33 +198,51 @@
 			if (result === 1) setsJ1++;
 			else if (result === 2) setsJ2++;
 		});
-		
-		match.court = document.getElementById(`court-${id}`).value;
-		match.set1j1 = parseInt(document.getElementById(`set1j1-${id}`).value) || 0;
-		match.set1j2 = parseInt(document.getElementById(`set1j2-${id}`).value) || 0;
-		match.set2j1 = parseInt(document.getElementById(`set2j1-${id}`).value) || 0;
-		match.set2j2 = parseInt(document.getElementById(`set2j2-${id}`).value) || 0;
-		match.set3j1 = parseInt(document.getElementById(`set3j1-${id}`).value) || 0;
-		match.set3j2 = parseInt(document.getElementById(`set3j2-${id}`).value) || 0;
-		
+	
 		if (setsJ1 >= 2) {
 			match.vainqueur = `joueur1`;
 			match.status = `terminé`;
+			uploadSingleMatchFieldToFirebase(match, "vainqueur", match.vainqueur);
+			
+			resultText = `Match terminé → 🏆 Victoire de ${match.joueur1}`;
+			j1Cells.forEach(cell => cell.style.fontWeight = 'bold');
+			div.style.backgroundColor = '#d4f7d4'; // vert clair			
+
+			match.startTime = 0;
+			uploadSingleMatchFieldToFirebase(match, "startTime", match.startTime);
 		}
 		else if (setsJ2 >= 2) {
 			match.vainqueur = `joueur2`;
 			match.status = `terminé`;
+			uploadSingleMatchFieldToFirebase(match, "vainqueur", match.vainqueur);
+			
+			resultText = `Match terminé → 🏆 Victoire de ${match.joueur2}`;
+			j2Cells.forEach(cell => cell.style.fontWeight = 'bold');
+			div.style.backgroundColor = '#d4f7d4'; // vert clair
+
+			match.startTime = 0;
+			uploadSingleMatchFieldToFirebase(match, "startTime", match.startTime);			
 		}
 		else if (match.court && match.court.trim() !== "") {
 			match.vainqueur = ``;
-			match.status = `en cours`;			
+			match.status = `en cours`;		
+
+			resultText = `Match en cours`;
+			div.style.backgroundColor = '#fff3cd'; // jaune clair		
+
+			if (match.startTime === "00:00:00") { // match pas commencé
+				match.startTime = formatDuration(Date.now());
+				uploadSingleMatchFieldToFirebase(match, "startTime", match.startTime);
+			}
 		} 
 		else {
 			match.vainqueur = ``;
 			match.status = `en attente`;
+			
+			resultText = `Match en attente`;
+			div.style.backgroundColor = '#f8d7da'; // rouge clair			
 		}
-
-		updateResult(id);
+		document.getElementById(`result-${id}`).textContent = resultText;
 		
 		switch (field) {
 		  case "court":
@@ -324,84 +267,10 @@
 			uploadSingleMatchFieldToFirebase(match, "set3j2", match.set3j2);
 			break;
 		  default:
-			uploadSingleMatchToFirebase(match);
+			//uploadSingleMatchToFirebase(match);
 		}
 		uploadSingleMatchFieldToFirebase(match, "status", match.status);
-		uploadSingleMatchFieldToFirebase(match, "vainqueur", match.vainqueur);
     }
-
-	// Calcul et mise à jour des champs dans la table des matchs 
-	function updateResult(id) {
-		const match = matches.find(m => m.id === id);
-		let resultText = ``;
-		let setsJ1 = 0, setsJ2 = 0;
-		const div = document.querySelector(`#match-${id}`);
-		const j1Cells = div.querySelectorAll('.joueur1');
-		const j2Cells = div.querySelectorAll('.joueur2');
-		
-		j1Cells.forEach(cell => cell.style.fontWeight = 'normal');
-		j2Cells.forEach(cell => cell.style.fontWeight = 'normal');
-
-		const sets = [
-			[match.set1j1, match.set1j2],
-			[match.set2j1, match.set2j2],
-			[match.set3j1, match.set3j2]
-		];
-
-		sets.forEach(([j1, j2]) => {
-			const result = isSetWon(j1, j2);
-			if (result === 1) setsJ1++;
-			else if (result === 2) setsJ2++;
-		});
-		
-		match.court = document.getElementById(`court-${id}`).value;
-		match.court = document.getElementById(`court-${id}`).value;
-		match.set1j1 = parseInt(document.getElementById(`set1j1-${id}`).value) || 0;
-		match.set1j2 = parseInt(document.getElementById(`set1j2-${id}`).value) || 0;
-		match.set2j1 = parseInt(document.getElementById(`set2j1-${id}`).value) || 0;
-		match.set2j2 = parseInt(document.getElementById(`set2j2-${id}`).value) || 0;
-		match.set3j1 = parseInt(document.getElementById(`set3j1-${id}`).value) || 0;
-		match.set3j2 = parseInt(document.getElementById(`set3j2-${id}`).value) || 0;
-
-		if (setsJ1 >= 2) {
-			resultText = `Match terminé → 🏆 Victoire de ${match.joueur1}`;
-			j1Cells.forEach(cell => cell.style.fontWeight = 'bold');
-			div.style.backgroundColor = '#d4f7d4'; // vert clair
-			match.status = `terminé`;
-			match.vainqueur = `joueur1`;
-		}
-		else if (setsJ2 >= 2) {
-			resultText = `Match terminé → 🏆 Victoire de ${match.joueur2}`;
-			j2Cells.forEach(cell => cell.style.fontWeight = 'bold');
-			div.style.backgroundColor = '#d4f7d4'; // vert clair
-			match.status = `terminé`;
-			match.vainqueur = `joueur2`;
-		}
-		else if (match.court && match.court.trim() !== "") {
-			resultText = `Match en cours`;
-			div.style.backgroundColor = '#fff3cd'; // jaune clair
-			match.status = `en cours`;
-			match.vainqueur = ``;
-		} 
-		else {
-			resultText = `Match en attente`;
-			div.style.backgroundColor = '#f8d7da'; // rouge clair
-			match.status = `en attente`;
-			match.vainqueur = ``;
-		}
-		document.getElementById(`result-${id}`).textContent = resultText;
-
-		if (match.status === 'en cours') {
-			if (match.startTime !== "00:00:00") return; // déjà en cours
-
-			match.startTime = formatDuration(Date.now());
-			uploadSingleMatchFieldToFirebase(match, "startTime", match.startTime);
-		} 
-		else if (match.status === 'terminé') {
-			match.startTime = 0;
-			uploadSingleMatchFieldToFirebase(match, "startTime", match.startTime);
-		}
-	}
 
 	// Export la table des match au format Excel
 	function exportToExcel() {
@@ -489,6 +358,7 @@
         const div = document.createElement('div');
         div.className = 'match-form';
 		div.id = `match-${match.id}`;
+		div.style.backgroundColor = '#f8d7da'; // rouge clair par défault
         div.innerHTML = `
 		  <h3>${match.joueur1} vs ${match.joueur2}</h3>
 		  <p>Court: 
@@ -539,10 +409,9 @@
 			  </tr>
 			</tbody>
 		  </table>
-		  <p><div class="result" id="result-${match.id}"></div></p>
+		  <p><div class="result" id="result-${match.id}">Match ${match.status}</div></p>
         `;
         container.appendChild(div);
-		updateResult(match.id);
       });
     }
   </script>
