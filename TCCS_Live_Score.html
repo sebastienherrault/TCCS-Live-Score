@@ -46,6 +46,7 @@
 	const db = getDatabase(app);
 	const matchesRef = ref(db, 'matches');
 	const updateRef = ref(db, 'lastUpdate');
+	let intervalId_updateMatchClock = '';
 	
 	let timers = {}; // stocke les timers par match.id
 
@@ -93,7 +94,7 @@
 	// MAJ et enregistrement des timers de match dans Firebase
 	function startTimer(match) {
 		if (timers[match.id]) return;
-		console.log("Start Timer:", match.id, timers[match.id]);
+		console.log("Start Timer:", match.id);
 		timers[match.id] = setInterval(() => {
 			const elapsed = Date.now() - parseDuration(match.startTime);
 			match.duration = formatDuration(elapsed);
@@ -112,11 +113,10 @@
 	
 	function stopAllTimer() {
 		console.log("Stop All Timer:", timers);
-		if (timers) {
-			timers.forEach(timer => {
-				clearInterval(timer);
-			});
-		}
+
+		Object.keys(timers).forEach((key) => {
+		  clearInterval(timers[key]);
+		});
 		timers = {};
 	}
 
@@ -125,9 +125,11 @@
 		const timestamp = snapshot.val();
 		if (timestamp) {
 			console.log("Nouveau excel detecté :", timestamp);
+			intervalId_updateMatchClock = setInterval(updateMatchClock, 1000);
 		}
 		else {
-			console.log("Fichier excel supprimé");
+			console.log("Aucun fichier excel chargé");
+			clearInterval(intervalId_updateMatchClock);
 			stopAllTimer();
 		}
 	});
@@ -147,7 +149,6 @@
 			});
 		}
 	}
-    setInterval(updateMatchClock, 1000);
     window.onload = updateMatchClock;
 
 	// Algo de check gain du set
