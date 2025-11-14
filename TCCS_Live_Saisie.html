@@ -46,6 +46,7 @@
 	
 	let matches = [];
 	let dataRefresh = 0;
+	let initialLoad = true;
 
 	// Recupere la valeur du nbRefresh depuis Firebase
 	async function GetNbDataRefresh() {
@@ -60,22 +61,26 @@
 	}
 
 	// Détection chargement d'un nouveau fichier Excel de liste des matches
-	let initialLoad = true;
 	onValue(updateRef, (snapshot) => {
+		console.log("onValue updateRef");
 		const timestamp = snapshot.val();
-
+		
 		if (initialLoad) {
-			initialLoad = false;
 			return; // ignore le premier appel
 		}
 		console.log("Nouvel Excel détectée :", timestamp);
 		handleUpdate();
-		GetNbDataRefresh();
 	});
 
 	// Force le rechargement des données dans le cas ou un autre utilisateur a modifié les resultats
 	onValue(lastDataUpdateRef, (snapshot) => {
+		console.log("onValue lastDataUpdateRef");
 		const refreshNb = snapshot.val();
+
+		if (initialLoad) {
+			return; // ignore le premier appel
+		}
+
 		if (refreshNb > dataRefresh) {
 			console.log("lastDataUpdateRef :", refreshNb);
 			dataRefresh = refreshNb;
@@ -122,8 +127,11 @@
 		}
 	}
 	document.addEventListener('DOMContentLoaded', async () => {
+		console.log("Listener DOMContentLoaded");
+		GetNbDataRefresh();
 		await ReadFromFirebase();
 		renderForms();
+		initialLoad = false;
 	});
 
 	// Ecriture d'une donnée d'un match dans Firebase
@@ -171,12 +179,6 @@
 		let setsJ1 = 0, setsJ2 = 0;
 		let resultText = ``;
 		
-		const j1Cells = div.querySelectorAll('.joueur1');
-		const j2Cells = div.querySelectorAll('.joueur2');
-		
-		j1Cells.forEach(cell => cell.style.fontWeight = 'normal');
-		j2Cells.forEach(cell => cell.style.fontWeight = 'normal');
-			
 		match.court = document.getElementById(`court-${id}`).value;
 		match.set1j1 = parseInt(document.getElementById(`set1j1-${id}`).value) || 0;
 		match.set1j2 = parseInt(document.getElementById(`set1j2-${id}`).value) || 0;
@@ -205,7 +207,6 @@
 			uploadSingleMatchFieldToFirebase(match, "vainqueur", match.vainqueur);
 			
 			resultText = `Match terminé → 🏆 Victoire de ${match.joueur1}`;
-			j1Cells.forEach(cell => cell.style.fontWeight = 'bold');
 			div.style.backgroundColor = '#d4f7d4'; // vert clair			
 
 			match.startTime = 0;
@@ -217,7 +218,6 @@
 			uploadSingleMatchFieldToFirebase(match, "vainqueur", match.vainqueur);
 			
 			resultText = `Match terminé → 🏆 Victoire de ${match.joueur2}`;
-			j2Cells.forEach(cell => cell.style.fontWeight = 'bold');
 			div.style.backgroundColor = '#d4f7d4'; // vert clair
 
 			match.startTime = 0;
@@ -242,7 +242,7 @@
 			resultText = `Match en attente`;
 			div.style.backgroundColor = '#f8d7da'; // rouge clair			
 		}
-		document.getElementById(`result-${id}`).textContent = resultText;
+		document.getElementById(`result-${id}`).innerHTML = `<strong>${resultText}</strong>`;
 		
 		switch (field) {
 		  case "court":
@@ -352,68 +352,91 @@
 	
 	// Formatage de l'affichage dans la page HTML
     function renderForms() {
-      const container = document.getElementById('forms');
-      container.innerHTML = '';
-      matches.forEach(match => {
-        const div = document.createElement('div');
-        div.className = 'match-form';
-		div.id = `match-${match.id}`;
-		div.style.backgroundColor = '#f8d7da'; // rouge clair par défault
-        div.innerHTML = `
-		  <h3>${match.joueur1} vs ${match.joueur2}</h3>
-		  <p>Court: 
-		    <select id="court-${match.id}" onchange="updateMatch(${match.id}, 'court')">
-		  	${["",1, 2, 3, 4, 5, 6].map(n => `<option value="${n}" ${match.court == n ? 'selected' : ''}>${n}</option>`).join('')}
-		    </select>
-			<span>Temps de jeu: </span><span class="clock" id="clock-${match.id}">${match.duration}</span>
-		  </p>
-		  <table>
-			<thead>
-			  <tr><th></th><th>Set 1</th><th>Set 2</th><th>Set 3</th></tr>
-			</thead>
-			<tbody>
-			  <tr>
-				<td>${match.joueur1}</td>
-				<td>
-				  <select id="set1j1-${match.id}" onchange="updateMatch(${match.id}, 'set1j1')">
-					${[...Array(8).keys()].map(n => `<option value="${n}" ${match.set1j1 == n ? 'selected' : ''}>${n}</option>`).join('')}
-				  </select>
-				</td>
-				<td>
-				  <select id="set2j1-${match.id}" onchange="updateMatch(${match.id}, 'set2j1')">
-					${[...Array(8).keys()].map(n => `<option value="${n}" ${match.set2j1 == n ? 'selected' : ''}>${n}</option>`).join('')}
-				  </select>
-				</td>
-				<td>
-				  <select id="set3j1-${match.id}" onchange="updateMatch(${match.id}, 'set3j1')">
-					${[...Array(8).keys()].map(n => `<option value="${n}" ${match.set3j1 == n ? 'selected' : ''}>${n}</option>`).join('')}
-				  </select>
-				</td>
-			  <tr>
-				<td>${match.joueur2}</td>
-				<td>
-				  <select id="set1j2-${match.id}" onchange="updateMatch(${match.id}, 'set1j2')">
-					${[...Array(8).keys()].map(n => `<option value="${n}" ${match.set1j2 == n ? 'selected' : ''}>${n}</option>`).join('')}
-				  </select>
-				</td>
-				<td>
-				  <select id="set2j2-${match.id}" onchange="updateMatch(${match.id}, 'set2j2')">
-					${[...Array(8).keys()].map(n => `<option value="${n}" ${match.set2j2 == n ? 'selected' : ''}>${n}</option>`).join('')}
-				  </select>
-				</td>
-				<td>
-				  <select id="set3j2-${match.id}" onchange="updateMatch(${match.id}, 'set3j2')">
-					${[...Array(8).keys()].map(n => `<option value="${n}" ${match.set3j2 == n ? 'selected' : ''}>${n}</option>`).join('')}
-				  </select>
-				</td>
-			  </tr>
-			</tbody>
-		  </table>
-		  <p><div class="result" id="result-${match.id}">Match ${match.status}</div></p>
-        `;
-        container.appendChild(div);
-      });
-    }
+		console.log("renderForms : ", matches);
+		const container = document.getElementById('forms');
+		container.innerHTML = '';
+		let resultText = ``;
+				
+		matches.forEach(match => {
+			console.log("renderForms : ", match.id);
+			const div = document.createElement('div');
+			div.className = 'match-form';
+			div.id = `match-${match.id}`;
+			
+			div.style.backgroundColor = match.status === "terminé" 
+			? "#d4f7d4"           // vert
+			: match.status === "en cours" 
+			? "#fff3cd"           // bleu
+			: "#f8d7da";          // rouge
+
+			if (match.vainqueur === "joueur1") {
+				resultText = `Match terminé → 🏆 Victoire de ${match.joueur1}`;
+			}
+			else if (match.vainqueur === "joueur2") {
+				resultText = `Match terminé → 🏆 Victoire de ${match.joueur2}`;
+			}
+			else if (match.status === "en cours") {
+				resultText = `Match en cours`;
+			} 
+			else {
+				resultText = `Match en attente`;		
+			}
+			
+			div.innerHTML = `
+			  <h3>${match.joueur1} vs ${match.joueur2}</h3>
+			  <p>Court: 
+				<select id="court-${match.id}" onchange="updateMatch(${match.id}, 'court')">
+				${["",1, 2, 3, 4, 5, 6].map(n => `<option value="${n}" ${match.court == n ? 'selected' : ''}>${n}</option>`).join('')}
+				</select>
+				<span>Temps de jeu: </span><span class="clock" id="clock-${match.id}">${match.duration}</span>
+			  </p>
+			  <table>
+				<thead>
+				  <tr><th></th><th>Set 1</th><th>Set 2</th><th>Set 3</th></tr>
+				</thead>
+				<tbody>
+				  <tr>
+					<td>${match.joueur1}</td>
+					<td>
+					  <select id="set1j1-${match.id}" onchange="updateMatch(${match.id}, 'set1j1')">
+						${[...Array(8).keys()].map(n => `<option value="${n}" ${match.set1j1 == n ? 'selected' : ''}>${n}</option>`).join('')}
+					  </select>
+					</td>
+					<td>
+					  <select id="set2j1-${match.id}" onchange="updateMatch(${match.id}, 'set2j1')">
+						${[...Array(8).keys()].map(n => `<option value="${n}" ${match.set2j1 == n ? 'selected' : ''}>${n}</option>`).join('')}
+					  </select>
+					</td>
+					<td>
+					  <select id="set3j1-${match.id}" onchange="updateMatch(${match.id}, 'set3j1')">
+						${[...Array(8).keys()].map(n => `<option value="${n}" ${match.set3j1 == n ? 'selected' : ''}>${n}</option>`).join('')}
+					  </select>
+					</td>
+				  <tr>
+					<td>${match.joueur2}</td>
+					<td>
+					  <select id="set1j2-${match.id}" onchange="updateMatch(${match.id}, 'set1j2')">
+						${[...Array(8).keys()].map(n => `<option value="${n}" ${match.set1j2 == n ? 'selected' : ''}>${n}</option>`).join('')}
+					  </select>
+					</td>
+					<td>
+					  <select id="set2j2-${match.id}" onchange="updateMatch(${match.id}, 'set2j2')">
+						${[...Array(8).keys()].map(n => `<option value="${n}" ${match.set2j2 == n ? 'selected' : ''}>${n}</option>`).join('')}
+					  </select>
+					</td>
+					<td>
+					  <select id="set3j2-${match.id}" onchange="updateMatch(${match.id}, 'set3j2')">
+						${[...Array(8).keys()].map(n => `<option value="${n}" ${match.set3j2 == n ? 'selected' : ''}>${n}</option>`).join('')}
+					  </select>
+					</td>
+				  </tr>
+				</tbody>
+			  </table>
+			  <p><div class="result" id="result-${match.id}"><b>${resultText}</b></div></p>
+			`;
+			container.appendChild(div);
+		});
+	}
   </script>
 </body>
 </html>
