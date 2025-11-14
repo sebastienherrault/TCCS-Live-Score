@@ -223,7 +223,7 @@
 		const matchRef = ref(db, `matches/${match.id - 1}/${field}`); // index basé sur id
 		set(matchRef, value)
 		.catch(err => console.error(err));
-
+		console.log("uploadSingleMatchFieldToFirebase : ", field, " => ", value);
 		dataRefresh++;
 		set(lastDataUpdateRef, dataRefresh);
 	}
@@ -233,7 +233,7 @@
 		const matchRef = ref(db, `matches/${match.id - 1}`); // index basé sur id
 		set(matchRef, match)
 		.catch(err => console.error(err));
-
+		console.log("uploadSingleMatchToFirebase : ", match);
 		dataRefresh++;
 		set(lastDataUpdateRef, dataRefresh);
 	}
