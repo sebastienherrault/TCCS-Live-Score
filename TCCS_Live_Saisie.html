@@ -68,8 +68,13 @@
 		if (initialLoad) {
 			return; // ignore le premier appel
 		}
-		console.log("Nouvel Excel détectée :", timestamp);
-		handleUpdate();
+		else if (timestamp) {
+			console.log("Nouvel Excel détectée :", timestamp);
+			handleUpdate();
+		}
+		else {
+			console.log("Aucun fichier excel chargé");
+		}
 	});
 
 	// Force le rechargement des données dans le cas ou un autre utilisateur a modifié les resultats
