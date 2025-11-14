@@ -134,49 +134,42 @@
 	const db = getDatabase(app);
 	const updateRef = ref(db, 'lastUpdate');
 	const lastDataUpdateRef = ref(db, 'lastDataUpdate');
+	const matchesRef = ref(db, 'matches');
+	
 	let matches = [];
 	let dataRefresh = 0;
-	
+
 	// Recupere la valeur du nbRefresh depuis Firebase
-	const lastDataUpdate = await get(lastDataUpdateRef);
-	if (lastDataUpdate.exists()) {
-		dataRefresh = lastDataUpdate.val();
-		console.log("Matches récupérés :", matches);
-	} else {
-		console.log("Aucune donnée trouvée dans Firebase.");
-		dataRefresh = 0;
-	}	
-	
-	// Creation ID unique pour chaque machine qui ouvre la page de saisie des resultat
-	function getDeviceId() {
-		let deviceId = localStorage.getItem('deviceId');
-		if (!deviceId) {
-			deviceId = crypto.randomUUID();
-			localStorage.setItem('deviceId', deviceId);
-			console.log("deviceId :", deviceId);
+	async function GetNbDataRefresh() {
+		const lastDataUpdate = await get(lastDataUpdateRef);
+		if (lastDataUpdate.exists()) {
+			dataRefresh = lastDataUpdate.val();
+			console.log("GetNbDataRefresh :", dataRefresh);
+		} else {
+			console.log("GetNbDataRefresh :  Aucune donnée trouvée dans Firebase.");
+			dataRefresh = 0;
 		}
-		return deviceId;
 	}
 
 	// Détection chargement d'un nouveau fichier Excel de liste des matches
 	let initialLoad = true;
 	onValue(updateRef, (snapshot) => {
 		const timestamp = snapshot.val();
-		console.log("Mise à jour détectée :", timestamp);
+		console.log("Nouvel Excel détectée :", timestamp);
 
 		if (initialLoad) {
 			initialLoad = false;
 			return; // ignore le premier appel
 		}
 		handleUpdate();
+		GetNbDataRefresh();
 	});
 
 	// Force le rechargement des données dans le cas ou un autre utilisateur a modifié les resultats
 	onValue(lastDataUpdateRef, (snapshot) => {
 		const refreshNb = snapshot.val();
-		
 		if (refreshNb > dataRefresh) {
-			console.log("Mise à jour détectée :", user_id);
+			console.log("lastDataUpdateRef :", refreshNb);
 			dataRefresh = refreshNb;
 			handleUpdate();
 		}
@@ -189,28 +182,30 @@
 
 	// Force la mise à jour des chronos des matchs depuis la page d'affichage des scores
 	async function updateMatchClock() {
-		const matchesRef = ref(db, 'matches');
 		const snapshot = await get(matchesRef);
 		if (snapshot.exists()) {
 			const matches = snapshot.val();
 			matches.forEach(match => {
-				document.getElementById(`clock-${match.id}`).textContent = `${match.duration}`;
+				//console.log("updateMatchClock :", match.id , "=", match.duration);
+				if (document.getElementById(`clock-${match.id}`)) {
+					document.getElementById(`clock-${match.id}`).textContent = `${match.duration}`;
+				}
 			});
 		} 
 	}
-    setInterval(updateMatchClock, 1000);
-    window.onload = updateMatchClock;
-
+		
+	setInterval(updateMatchClock, 1000);
+	window.onload = updateMatchClock;
+    
 	// Lecture des données dans la base Firebase
 	async function ReadFromFirebase() {
-		try {
-			const matchesRef = ref(db, 'matches');
-			const snapshot = await get(matchesRef);
+		try {	
+			const snapshot = await get(matchesRef);			
 			if (snapshot.exists()) {
 				matches = snapshot.val();
-				console.log("Matches récupérés :", matches);
+				console.log("ReadFromFirebase :", matches);
 			} else {
-				console.log("Aucune donnée trouvée dans Firebase.");
+				console.log("ReadFromFirebase : Aucune donnée trouvée dans Firebase.");
 				matches = [];
 			}
 		} catch (error) {
