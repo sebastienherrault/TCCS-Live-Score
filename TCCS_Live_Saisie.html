@@ -137,6 +137,7 @@
 		GetNbDataRefresh();
 		await ReadFromFirebase();
 		renderForms();
+		refreshCourtSelects();
 		initialLoad = false;
 	});
 
@@ -278,6 +279,18 @@
 		uploadSingleMatchFieldToFirebase(match, "status", match.status);
     }
 
+	window.refreshCourtSelects = function() {
+		const selects = Array.from(document.querySelectorAll('.court-select'));
+		const chosen = new Set(selects.map(s => s.value).filter(v => v !== ''));
+		for (const sel of selects) {
+			const current = sel.value;
+			for (const opt of sel.options) {
+				if (opt.value === '') continue;
+				opt.disabled = chosen.has(opt.value) && opt.value !== current;
+			}
+		}
+	}
+
 	// Export la table des match au format Excel
 	function exportToExcel() {
 		const wb = XLSX.utils.book_new();
@@ -391,7 +404,7 @@
 			div.innerHTML = `
 			  <h3>${match.joueur1} vs ${match.joueur2}</h3>
 			  <p>Court: 
-				<select id="court-${match.id}" onchange="updateMatch(${match.id}, 'court')">
+				<select id="court-${match.id}"  class="court-select" onchange="updateMatch(${match.id}, 'court'); refreshCourtSelects();">
 				${["",1, 2, 3, 4, 5, 6].map(n => `<option value="${n}" ${match.court == n ? 'selected' : ''}>${n}</option>`).join('')}
 				</select>
 				<span>Temps de jeu: </span><span class="clock" id="clock-${match.id}">${match.duration}</span>
