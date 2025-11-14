@@ -209,7 +209,7 @@
 			resultText = `Match terminé → 🏆 Victoire de ${match.joueur1}`;
 			div.style.backgroundColor = '#d4f7d4'; // vert clair			
 
-			match.startTime = 0;
+			match.startTime = "00:00:00";
 			uploadSingleMatchFieldToFirebase(match, "startTime", match.startTime);
 		}
 		else if (setsJ2 >= 2) {
@@ -220,7 +220,7 @@
 			resultText = `Match terminé → 🏆 Victoire de ${match.joueur2}`;
 			div.style.backgroundColor = '#d4f7d4'; // vert clair
 
-			match.startTime = 0;
+			match.startTime = "00:00:00";
 			uploadSingleMatchFieldToFirebase(match, "startTime", match.startTime);			
 		}
 		else if (match.court && match.court.trim() !== "") {
