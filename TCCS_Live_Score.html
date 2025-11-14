@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="mobile.css">
-  <link rel="stylesheet" href="desktop.css" media="screen and (min-width: 1000px)">
+  <link rel="stylesheet" href="TCCS_Live_Score_mobile.css">
+  <link rel="stylesheet" href="TCCS_Live_Score_desktop.css" media="screen and (min-width: 1000px)">
   <title>TCCS Live Score</title>
 </head>
 <body>
@@ -45,6 +45,8 @@
 	const app = initializeApp(firebaseConfig);
 	const db = getDatabase(app);
 	const matchesRef = ref(db, 'matches');
+	const updateRef = ref(db, 'lastUpdate');
+	
 	let timers = {}; // stocke les timers par match.id
 
 	// Ecriture d'une donnée d'un match dans Firebase
@@ -91,24 +93,44 @@
 	// MAJ et enregistrement des timers de match dans Firebase
 	function startTimer(match) {
 		if (timers[match.id]) return;
-
+		console.log("Start Timer:", match.id, timers[match.id]);
 		timers[match.id] = setInterval(() => {
 			const elapsed = Date.now() - parseDuration(match.startTime);
 			match.duration = formatDuration(elapsed);
 			uploadSingleMatchFieldToFirebase(match, "duration", match.duration);
-			
-			const matchClockUpdateRef = ref(db, 'matchClockUpdate');
-			set(matchClockUpdateRef, match.id);
 		}, 1000);
 	}
 	
 	// RAZ et enregistrement des timers de match dans Firebase
 	function stopTimer(match) {
 		if (timers[match.id]) {
+			console.log("Stop Timer:", match.id, timers[match.id]);
 			clearInterval(timers[match.id]);
 			delete timers[match.id];
 		}
 	}
+	
+	function stopAllTimer() {
+		console.log("Stop All Timer:", timers);
+		if (timers) {
+			timers.forEach(timer => {
+				clearInterval(timer);
+			});
+		}
+		timers = {};
+	}
+
+	// Détection chargement d'un nouveau fichier Excel de liste des matches
+	onValue(updateRef, (snapshot) => {
+		const timestamp = snapshot.val();
+		if (timestamp) {
+			console.log("Nouveau excel detecté :", timestamp);
+		}
+		else {
+			console.log("Fichier excel supprimé");
+			stopAllTimer();
+		}
+	});
 
 	// Gestion timers de match dans Firebase (@1s)
 	async function updateMatchClock() {
@@ -123,7 +145,7 @@
 					stopTimer(match);
 				}
 			});
-		} 
+		}
 	}
     setInterval(updateMatchClock, 1000);
     window.onload = updateMatchClock;
