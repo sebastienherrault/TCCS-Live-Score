@@ -8,6 +8,27 @@
   <title>TCCS Live Score</title>
 </head>
 <body>
+	<!-- Bouton hamburger + menu déroulant -->
+	<div class="hamburger-wrapper">
+	  <button id="hamburgerBtn"
+			  class="hamburger-btn"
+			  aria-haspopup="true"
+			  aria-expanded="false"
+			  aria-controls="dropdownMenu"
+			  aria-label="Ouvrir le menu">
+		<!-- Icône 3 traits -->
+		<span aria-hidden="true" class="hamburger-icon">
+		  <span></span><span></span><span></span>
+		</span>
+	  </button>
+
+	  <nav id="dropdownMenu" class="dropdown" role="menu" aria-label="Menu principal">
+		<a href="index.html" role="menuitem" data-title="Accueil">🏠 Accueil</a>
+		<a href="TCCS_Live_Match.html" role="menuitem" data-title="Feuille de match">📋 Feuille de matchs</a>
+		<a href="TCCS_Live_Saisie.html" role="menuitem" data-title="Saisie des scores">🎾 Saisie des Scores</a>
+		<a href="TCCS_Live_Score.html" role="menuitem" data-title="Affichage des scores">📺 Affichages des Scores</a>
+	  </nav>
+	</div>
     <header>
 	  <div class="header-left">
       <img src="TCCS.JPG" alt="Logo TCCS">
@@ -307,6 +328,65 @@
 			}
       });
 	}
+
+	// Gestion Menu de navigation
+	(function () {
+    const btn = document.getElementById('hamburgerBtn');
+    const menu = document.getElementById('dropdownMenu');
+    if (!btn || !menu) return;
+
+    const links = [...menu.querySelectorAll('a[role="menuitem"]')];
+
+    // Page active
+    const current = location.pathname.split('/').pop() || 'index.html';
+    links.forEach(a => {
+      if (a.getAttribute('href') === current) a.classList.add('active');
+      if (a.dataset.title && !a.title) a.title = a.dataset.title; // tooltip natif
+    });
+
+    // Ouvrir/fermer
+    const openMenu = () => {
+      menu.classList.add('open');
+      btn.setAttribute('aria-expanded', 'true');
+      // Focus sur le 1er lien pour l’accessibilité
+      setTimeout(() => links[0]?.focus(), 0);
+      document.addEventListener('click', outsideClose, { once: true });
+      document.addEventListener('keydown', onKey);
+    };
+    const closeMenu = () => {
+      menu.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+      document.removeEventListener('keydown', onKey);
+    };
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = menu.classList.contains('open');
+      isOpen ? closeMenu() : openMenu();
+    });
+
+    // Fermer si clic à l’extérieur
+    const outsideClose = (e) => {
+      if (!menu.contains(e.target) && e.target !== btn) closeMenu();
+    };
+
+    // Clavier: Esc ferme, flèches naviguent, Tab cycle dans le menu
+    function onKey(e) {
+      const focusIndex = links.indexOf(document.activeElement);
+      if (e.key === 'Escape') {
+        e.preventDefault(); closeMenu(); btn.focus();
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const i = (focusIndex + 1) % links.length;
+        links[i]?.focus();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const i = (focusIndex - 1 + links.length) % links.length;
+        links[i]?.focus();
+      }
+    }
+  })();
+	
 
 	document.addEventListener('DOMContentLoaded', () => { 
 		loadMatches(); 
