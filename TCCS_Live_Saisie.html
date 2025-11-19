@@ -7,20 +7,98 @@
 	<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
-  <div class="overlay">
+  <!-- Garde visuelle tant qu’on n’a pas validé l’auth -->
+  <div id="guard">Chargement…</div>
+
+<!-- Bouton hamburger + menu déroulant -->
+<div class="hamburger-wrapper">
+  <button id="hamburgerBtn"
+          class="hamburger-btn"
+          aria-haspopup="true"
+          aria-expanded="false"
+          aria-controls="dropdownMenu"
+          aria-label="Ouvrir le menu">
+    <!-- Icône 3 traits -->
+    <span aria-hidden="true" class="hamburger-icon">
+      <span></span><span></span><span></span>
+    </span>
+  </button>
+
+  <nav id="dropdownMenu" class="dropdown" role="menu" aria-label="Menu principal">
+    <a href="index.html" role="menuitem" data-title="Accueil">🏠 Accueil</a>
+    <a href="TCCS_Live_Match.html" role="menuitem" data-title="Feuille de match">📋 Feuille de matchs</a>
+    <a href="TCCS_Live_Saisie.html" role="menuitem" data-title="Saisie des scores">🎾 Saisie des Scores</a>
+	<a href="TCCS_Live_Score.html" role="menuitem" data-title="Affichage des scores">📺 Affichages des Scores</a>
+  </nav>
+</div>
+
+  <div class="overlay" id="app">
 	<header>
-	  <div class="header-left">
-		<img src="TCCS.JPG" alt="Logo TCCS">
-		<h1>TCCS Saisie des Résultats</h1>
+	  <div class="brand" role="banner">
+		<img src="TCCS.JPG" alt="Logo TCCS" class="img-fluid mb-4" style="max-width: 100px;">
+		<div class="brand-title"><b>🏆 TCCS Score Live - Saisie des scores</b></div>
 	  </div>
+      <div class="userbox">
+        <span id="whoami" style="opacity:.8; margin-right:8px;"></span>
+        <button id="logout" class="btn">Se déconnecter</button>
+      </div>	  
 	</header>
   </div>
+<main>
 <div id="forms"></div>
+<script type="module">
+	import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+	import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+	// (Optionnel) si tu utilises Firestore pour tes matchs :
+	// import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+	// Your web app's Firebase configuration
+	// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+	const firebaseConfig = {
+		apiKey: "AIzaSyBk63PQRrlg6647pGw5Dof5-I-LCLexJrg",
+		authDomain: "tccs-live-score.firebaseapp.com",
+		databaseURL: "https://tccs-live-score-default-rtdb.europe-west1.firebasedatabase.app",
+		projectId: "tccs-live-score",
+		storageBucket: "tccs-live-score.firebasestorage.app",
+		messagingSenderId: "142574190845",
+		appId: "1:142574190845:web:654340ce971abe7cf8fe94",
+		measurementId: "G-E2Q9H3JRDG"
+	};
+
+
+	const app = initializeApp(firebaseConfig);
+	const auth = getAuth(app);
+
+	const guard = document.getElementById('guard');
+	const appRoot = document.getElementById('app');
+	const whoami = document.getElementById('whoami');
+
+	onAuthStateChanged(auth, (user) => {
+	  if (!user) {
+		// Non connecté -> retour au login
+		window.location.href = "index.html";
+		return;
+	  }
+	  // Connecté -> révèle l’app
+	  guard.style.display = 'none';
+	  appRoot.style.display = 'block';
+	  whoami.textContent = user.email || 'Connecté';
+	});
+
+	document.getElementById('logout').addEventListener('click', async () => {
+	  try {
+		await signOut(auth);
+	  } finally {
+		window.location.href = "index.html";
+	  }
+	});
+</script>
+
 <script type="module">
 	// Import the functions you need from the SDKs you need
 	import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
 	import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
- 
+
 	// TODO: Add SDKs for Firebase products that you want to use
 	// https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -39,6 +117,7 @@
 
 	// Initialize Firebase
 	const app = initializeApp(firebaseConfig);
+
 	const db = getDatabase(app);
 	const updateRef = ref(db, 'lastUpdate');
 	const lastDataUpdateRef = ref(db, 'lastDataUpdate');
@@ -213,7 +292,7 @@
 			match.status = `terminé`;
 			uploadSingleMatchFieldToFirebase(match, "vainqueur", match.vainqueur);
 			
-			resultText = `Match terminé → 🏆 Victoire de ${match.joueur1}`;
+			resultText = `Match terminé : 🏆 Victoire de ${match.joueur1}`;
 			div.style.backgroundColor = '#d4f7d4'; // vert clair			
 
 			match.startTime = "00:00:00";
@@ -224,7 +303,7 @@
 			match.status = `terminé`;
 			uploadSingleMatchFieldToFirebase(match, "vainqueur", match.vainqueur);
 			
-			resultText = `Match terminé → 🏆 Victoire de ${match.joueur2}`;
+			resultText = `Match terminé : 🏆 Victoire de ${match.joueur2}`;
 			div.style.backgroundColor = '#d4f7d4'; // vert clair
 
 			match.startTime = "00:00:00";
@@ -249,7 +328,7 @@
 			resultText = `Match en attente`;
 			div.style.backgroundColor = '#f8d7da'; // rouge clair			
 		}
-		document.getElementById(`result-${id}`).innerHTML = `<strong>${resultText}</strong>`;
+		document.getElementById(`result-${id}`).innerHTML = `${resultText}`;
 		
 		switch (field) {
 		  case "court":
@@ -369,13 +448,80 @@
 		URL.revokeObjectURL(url); // Nettoyage
 	}
 	
+	// Gestion Menu de navigation
+	(function () {
+    const btn = document.getElementById('hamburgerBtn');
+    const menu = document.getElementById('dropdownMenu');
+    if (!btn || !menu) return;
+
+    const links = [...menu.querySelectorAll('a[role="menuitem"]')];
+
+    // Page active
+    const current = location.pathname.split('/').pop() || 'index.html';
+    links.forEach(a => {
+      if (a.getAttribute('href') === current) a.classList.add('active');
+      if (a.dataset.title && !a.title) a.title = a.dataset.title; // tooltip natif
+    });
+
+    // Ouvrir/fermer
+    const openMenu = () => {
+      menu.classList.add('open');
+      btn.setAttribute('aria-expanded', 'true');
+      // Focus sur le 1er lien pour l’accessibilité
+      setTimeout(() => links[0]?.focus(), 0);
+      document.addEventListener('click', outsideClose, { once: true });
+      document.addEventListener('keydown', onKey);
+    };
+    const closeMenu = () => {
+      menu.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+      document.removeEventListener('keydown', onKey);
+    };
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = menu.classList.contains('open');
+      isOpen ? closeMenu() : openMenu();
+    });
+
+    // Fermer si clic à l’extérieur
+    const outsideClose = (e) => {
+      if (!menu.contains(e.target) && e.target !== btn) closeMenu();
+    };
+
+    // Clavier: Esc ferme, flèches naviguent, Tab cycle dans le menu
+    function onKey(e) {
+      const focusIndex = links.indexOf(document.activeElement);
+      if (e.key === 'Escape') {
+        e.preventDefault(); closeMenu(); btn.focus();
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const i = (focusIndex + 1) % links.length;
+        links[i]?.focus();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const i = (focusIndex - 1 + links.length) % links.length;
+        links[i]?.focus();
+      }
+    }
+  })();
+	
 	// Formatage de l'affichage dans la page HTML
     function renderForms() {
 		console.log("renderForms : ", matches);
 		const container = document.getElementById('forms');
 		container.innerHTML = '';
 		let resultText = ``;
-				
+						
+		if (!matches || matches.length === 0) {
+			// matches est null, undefined ou vide
+			const div = document.createElement('div');
+			div.id = 'no-match-message';
+			div.textContent = "Aucun match actuellement disponible, veuillez charger une feuille de match !";
+			container.appendChild(div);		  
+			return;
+		}
+		
 		matches.forEach(match => {
 			console.log("renderForms : ", match.id);
 			const div = document.createElement('div');
@@ -389,10 +535,10 @@
 			: "#f8d7da";          // rouge
 
 			if (match.vainqueur === "joueur1") {
-				resultText = `Match terminé → 🏆 Victoire de ${match.joueur1}`;
+				resultText = `Match terminé : 🏆 Victoire de ${match.joueur1}`;
 			}
 			else if (match.vainqueur === "joueur2") {
-				resultText = `Match terminé → 🏆 Victoire de ${match.joueur2}`;
+				resultText = `Match terminé : 🏆 Victoire de ${match.joueur2}`;
 			}
 			else if (match.status === "en cours") {
 				resultText = `Match en cours`;
@@ -403,12 +549,12 @@
 			
 			div.innerHTML = `
 			  <h3>${match.joueur1} vs ${match.joueur2}</h3>
-			  <p>Court: 
+			  <h3>Court: 
 				<select id="court-${match.id}"  class="court-select" onchange="updateMatch(${match.id}, 'court'); refreshCourtSelects();">
 				${["",1, 2, 3, 4, 5, 6].map(n => `<option value="${n}" ${match.court == n ? 'selected' : ''}>${n}</option>`).join('')}
 				</select>
 				<span>Temps de jeu: </span><span class="clock" id="clock-${match.id}">${match.duration}</span>
-			  </p>
+			  </h3>
 			  <table>
 				<thead>
 				  <tr><th></th><th>Set 1</th><th>Set 2</th><th>Set 3</th></tr>
@@ -451,11 +597,12 @@
 				  </tr>
 				</tbody>
 			  </table>
-			  <p><div class="result" id="result-${match.id}"><b>${resultText}</b></div></p>
+			  <h3><div class="result" id="result-${match.id}">${resultText}</div></h3>
 			`;
 			container.appendChild(div);
 		});
 	}
   </script>
+</main>
 </body>
 </html>
