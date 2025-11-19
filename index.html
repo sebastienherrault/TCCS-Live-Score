@@ -1,41 +1,345 @@
-<!DOCTYPE html>
+
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>TCCS - Accueil</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TCCS – Accueil</title>
+  <meta name="color-scheme" content="light dark" />
+  <style>
+    :root {
+      --bg: #0b1320; --fg: #e8eefc; --muted: #aeb8d0; --accent: #2f80ed;
+      --ok: #2ecc71; --warn: #f39c12; --err: #e74c3c; --card: #141b2d; --border: #25314e;
+	  --menu-bg: #0b1220; --menu-fg: #e5e7eb; --menu-accent: #60a5fa; --menu-border: #1f2937; --shadow: 0 8px 24px rgba(0,0,0,.25);
+    }
+    html, body { margin:0; padding:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: var(--bg); color: var(--fg); }
+    a { color: var(--fg); text-decoration: none; } a:hover { text-decoration: underline; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 80px; border-bottom: 1px solid var(--border); background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0)); }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .brand-logo { inline-size:40px; block-size:40px; background:#1d2a44; border-radius:8px; display:grid; place-items:center; font-weight:700; }
+    .brand-title { font-size: 40px; font-weight:100; letter-spacing:.2px; }
+    .userbox { display:flex; align-items:center; gap:12px; }
+    .user-email { color: var(--muted); font-size:.95rem; }
+    .btn { background: var(--accent); color:white; border:none; padding:10px 14px; border-radius:8px; cursor:pointer; font-weight:600; }
+    .btn.secondary { background: transparent; border:1px solid var(--border); color: var(--fg); }
+    main { max-inline-size: 900px; margin: 32px auto; padding-inline: 20px; }
+    .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px; }
+    .card { background: var(--card); border:1px solid var(--border); padding:18px; border-radius:14px; display:flex; flex-direction:column; gap:10px; }
+    .card h3 { margin:0; font-size:1.05rem; }
+    .card p { margin:0; color: var(--muted); font-size:.95rem; }
+    footer { text-align:center; color:var(--muted); padding:30px 16px; border-top:1px solid var(--border); margin-top: 40px; }
+    /* Modal login */
+    .modal-backdrop { position: fixed; inset:0; background: rgba(0,0,0,0.55); display:none; align-items:center; justify-content:center; padding:20px; backdrop-filter: blur(2px); }
+    .modal { inline-size:min(440px, 100%); background: var(--card); border:1px solid var(--border); border-radius:16px; padding:22px; }
+    .modal h2 { margin:0 0 10px 0; }
+    .field { display:flex; flex-direction:column; gap:6px; margin: 10px 0 14px; }
+    label { color: var(--muted); font-size:.95rem; }
+    input[type=email], input[type=password] { background:#0d1526; color:var(--fg); border:1px solid var(--border); padding:10px 12px; border-radius:8px; }
+    .row { display:flex; gap:10px; align-items:center; justify-content:flex-end; }
+    .error { color: var(--err); font-size:.9rem; min-height: 1.2em; }
+    .pill { display:inline-flex; font-size:.8rem; padding:2px 8px; border-radius:999px; border:1px solid var(--border); color:var(--muted); }
+    .public { border-color: #2d8346; color:#9be7b4; }
+    .protected { border-color: #9b6bff; color: #cdb9ff; }
+	.hamburger-wrapper { position: fixed; top: 12px; left: 12px; z-index: 1100; }
+
+	/* Bouton hamburger rond et discret */
+	.hamburger-btn { width: 40px; height: 40px; border-radius: 999px; border: 1px solid var(--menu-border); background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: grid; place-items: center; cursor: pointer; color: var(--menu-fg); }
+	.hamburger-btn:focus-visible { outline: 2px solid var(--menu-accent); outline-offset: 2px; }
+
+	/* Icône 3 traits */
+	.hamburger-icon { display: inline-block; width: 18px; }
+	.hamburger-icon span { display: block; height: 2px; background: var(--menu-fg); margin: 3px 0; width: 100%; border-radius: 2px; transition: transform .2s ease, opacity .2s ease; }
+
+	/* Animation en X quand menu ouvert */
+	.hamburger-btn[aria-expanded="true"] .hamburger-icon span:nth-child(1) { transform: translateY(5px) rotate(45deg); }
+	.hamburger-btn[aria-expanded="true"] .hamburger-icon span:nth-child(2) { opacity: 0; }
+	.hamburger-btn[aria-expanded="true"] .hamburger-icon span:nth-child(3) { transform: translateY(-5px) rotate(-45deg); }
+
+	/* Menu déroulant */
+	.dropdown { position: absolute; top: 48px; left: 0; min-width: 220px; background: var(--menu-bg); color: var(--menu-fg); border: 1px solid var(--menu-border); border-radius: 10px; padding: 8px; box-shadow: var(--shadow);  opacity: 0; transform: translateY(-6px); pointer-events: none; transition: opacity .15s ease, transform .15s ease; }
+	.dropdown.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+	.dropdown a { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; color: inherit; text-decoration: none; white-space: nowrap; }
+	.dropdown a:hover, .dropdown a:focus { background: #111827; outline: none; }
+	.dropdown a.active { border: 1px solid #12325f; background: #0b254a; color: var(--menu-accent); }
+
+
+  </style>
 </head>
-<body class="bg-light">
-  <div class="container py-5 text-center">
-    <!-- Logo -->
-    <img src="TCCS.JPG" alt="Logo TCCS" class="img-fluid mb-4" style="max-width: 200px;">
+<body>
+	<!-- Bouton hamburger + menu déroulant -->
+	<div class="hamburger-wrapper">
+	  <button id="hamburgerBtn"
+			  class="hamburger-btn"
+			  aria-haspopup="true"
+			  aria-expanded="false"
+			  aria-controls="dropdownMenu"
+			  aria-label="Ouvrir le menu">
+		<!-- Icône 3 traits -->
+		<span aria-hidden="true" class="hamburger-icon">
+		  <span></span><span></span><span></span>
+		</span>
+	  </button>
 
-    <!-- Titre -->
-    <h1 class="mb-4">🏆 TCCS - Gestion des Scores</h1>
+	  <nav id="dropdownMenu" class="dropdown" role="menu" aria-label="Menu principal">
+		<a href="index.html" role="menuitem" data-title="Accueil">🏠 Accueil</a>
+		<a href="TCCS_Live_Match.html" role="menuitem" data-title="Feuille de match">📋 Feuille de matchs</a>
+		<a href="TCCS_Live_Saisie.html" role="menuitem" data-title="Saisie des scores">🎾 Saisie des Scores</a>
+		<a href="TCCS_Live_Score.html" role="menuitem" data-title="Affichage des scores">📺 Affichages des Scores</a>
+	  </nav>
+	</div>
 
-    <!-- Menu -->
-    <div class="d-grid gap-3 col-6 mx-auto">
-	  <a href="#" class="btn btn-primary btn-lg" onclick="checkPassword()">🧾 Feuille de Matchs</a>
-	  <a href="TCCS_Live_Saisie.html" class="btn btn-primary btn-lg">📝 Saisie des Résultats</a>
-      <a href="TCCS_Live_Score.html" class="btn btn-success btn-lg">📺 Affichage des Scores</a>
+  <header>
+    <div class="brand" role="banner">
+      <img src="TCCS.JPG" alt="Logo TCCS" class="img-fluid mb-4" style="max-width: 100px;">
+      <div class="brand-title"><b>🏆 TCCS Score Live - Accueil</b></div>
     </div>
-    <!-- Pied de page -->
-    <footer class="text-center mt-5 text-muted">
-      <small>&copy; 2025 TCCS - Application web locale</small>
-    </footer>
-  </div>
-<script>
-function checkPassword() {
-  const password = prompt("Entrez le mot de passe pour accéder à la feuille de match :");
-  const correctPassword = "tennisTCCS"; // 🔒 à personnaliser
+    <div class="userbox">
+      <span id="auth-status" class="user-email" aria-live="polite">Non connecté</span>
+      <button id="login-btn" class="btn">Se connecter</button>
+      <button id="logout-btn" class="btn secondary" style="display:none">Se déconnecter</button>
+    </div>
+  </header>
 
-  if (password === correctPassword) {
-    window.location.href = "TCCS_Live_Match.html"; // 🔁 à adapter selon ton nom de fichier
-  } else {
-    alert("Mot de passe incorrect.");
-  }
-}
-</script>
+  <main>
+    <div class="grid" aria-label="Navigation">
+      <a class="card" href="#" data-protected="true" data-target="TCCS_Live_Match.html">
+        <h3>📝 Feuille de Matchs <span class="pill protected">protégé</span></h3>
+        <p>Charger/supprimer la feuille de match (accès réservé).</p>
+      </a>
+      <a class="card" href="#" data-protected="true" data-target="TCCS_Live_Saisie.html">
+        <h3>⌨️ Saisie des Scores <span class="pill protected">protégé</span></h3>
+        <p>Enregistrer les résultats en direct (accès réservé).</p>
+      </a>
+      <a class="card" href="TCCS_Live_Score.html" data-protected="false">
+        <h3>📺 Affichage des Scores <span class="pill public">public</span></h3>
+        <p>Visualiser le live des scores (accès public).</p>
+      </a>
+    </div>
+  </main>
+
+  <footer>© 2025 TCCS Score Live– Application web locale</footer>
+
+  <!-- Modal Auth -->
+  <div id="modal-backdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="login-title">
+    <div class="modal">
+      <h2 id="login-title">Connexion</h2>
+      <p id="login-sub" class="user-email">Connectez-vous pour continuer.</p>
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" type="email" autocomplete="username" required />
+      </div>
+      <div class="field">
+        <label for="password">Mot de passe</label>
+        <input id="password" type="password" autocomplete="current-password" required />
+      </div>
+      <div id="login-error" class="error" aria-live="polite"></div>
+      <div class="row">
+        <button id="cancel-login" class="btn secondary" type="button">Annuler</button>
+        <button id="do-login" class="btn" type="button">Se connecter</button>
+      </div>
+      <div class="row" style="justify-content:space-between; margin-top:6px">
+        <label style="display:flex; gap:8px; align-items:center">
+          <input id="remember" type="checkbox" checked />
+          <span>Rester connecté</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // === Firebase (modular v10) ===
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence, browserSessionPersistence, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+
+	// Your web app's Firebase configuration
+	// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+	const firebaseConfig = {
+		apiKey: "AIzaSyBk63PQRrlg6647pGw5Dof5-I-LCLexJrg",
+		authDomain: "tccs-live-score.firebaseapp.com",
+		databaseURL: "https://tccs-live-score-default-rtdb.europe-west1.firebasedatabase.app",
+		projectId: "tccs-live-score",
+		storageBucket: "tccs-live-score.firebasestorage.app",
+		messagingSenderId: "142574190845",
+		appId: "1:142574190845:web:654340ce971abe7cf8fe94",
+		measurementId: "G-E2Q9H3JRDG"
+	};
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // ===== UI helpers =====
+    const $ = (sel, root=document) => root.querySelector(sel);
+    const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+
+    const authStatus = $('#auth-status');
+    const loginBtn = $('#login-btn');
+    const logoutBtn = $('#logout-btn');
+    const modal = $('#modal-backdrop');
+    const emailInput = $('#email');
+    const passwordInput = $('#password');
+    const loginError = $('#login-error');
+    const cancelLogin = $('#cancel-login');
+    const doLogin = $('#do-login');
+    const remember = $('#remember');
+    const showSignup = $('#show-signup');
+    const signupBlock = $('#signup-block');
+    const doSignup = $('#do-signup');
+
+    let pendingRedirect = null;
+
+    function openLogin(targetUrl = null) {
+      pendingRedirect = targetUrl;
+      modal.style.display = 'flex';
+      loginError.textContent = '';
+      setTimeout(() => emailInput.focus(), 0);
+    }
+    function closeLogin() {
+      modal.style.display = 'none';
+      pendingRedirect = null;
+    }
+
+    loginBtn.addEventListener('click', () => openLogin());
+    cancelLogin.addEventListener('click', () => closeLogin());
+
+    // Intercepter les liens protégés
+    $$('.card[data-protected="true"]').forEach(card => {
+      card.addEventListener('click', (e) => {
+        const target = e.currentTarget.getAttribute('data-target');
+        if (!auth.currentUser) {
+          e.preventDefault();
+          openLogin(target);
+        } else {
+          // déjà connecté → navigue
+          if (target) window.location.href = target;
+        }
+      });
+    });
+
+    // Connexion
+    async function login() {
+      try {
+        const persistence = remember.checked ? browserLocalPersistence : browserSessionPersistence;
+        await setPersistence(auth, persistence);
+        const email = emailInput.value.trim();
+        const pass = passwordInput.value;
+        await signInWithEmailAndPassword(auth, email, pass);
+        loginError.textContent = '';
+        closeLogin();
+        if (pendingRedirect) {
+          const url = pendingRedirect; pendingRedirect = null; window.location.href = url;
+        }
+      } catch (err) {
+        console.error(err);
+        loginError.textContent = normalizeAuthError(err);
+      }
+    }
+    doLogin.addEventListener('click', login);
+    passwordInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') login(); });
+
+    // Création (optionnelle) – à n'utiliser que si tu autorises l'inscription
+    async function signup() {
+      try {
+        const email = emailInput.value.trim();
+        const pass = passwordInput.value;
+        await createUserWithEmailAndPassword(auth, email, pass);
+        loginError.textContent = '';
+        closeLogin();
+        if (pendingRedirect) { const url = pendingRedirect; pendingRedirect = null; window.location.href = url; }
+      } catch (err) {
+        console.error(err);
+        loginError.textContent = normalizeAuthError(err);
+      }
+    }
+
+    // Déconnexion
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+      } catch (err) {
+        console.error(err);
+      }
+    });
+
+    // Observer l'état
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        authStatus.textContent = `Connecté : ${user.email ?? 'Utilisateur'}`;
+        loginBtn.style.display = 'none';
+        logoutBtn.style.display = 'inline-block';
+      } else {
+        authStatus.textContent = 'Non connecté';
+        loginBtn.style.display = 'inline-block';
+        logoutBtn.style.display = 'none';
+      }
+    });
+
+    function normalizeAuthError(err) {
+      const code = err?.code || '';
+      if (code.includes('auth/invalid-email')) return 'Email invalide.';
+      if (code.includes('auth/missing-password')) return 'Mot de passe manquant.';
+      if (code.includes('auth/invalid-credential') || code.includes('auth/wrong-password')) return 'Email ou mot de passe incorrect.';
+      if (code.includes('auth/user-not-found')) return "Aucun compte n'est associé à cet email.";
+      if (code.includes('auth/weak-password')) return 'Mot de passe trop faible (6+ caractères).';
+      if (code.includes('auth/email-already-in-use')) return 'Un compte existe déjà avec cet email.';
+      return 'Erreur de connexion. Réessaie.';
+    }
+
+	// Gestion Menu de navigation
+	(function () {
+    const btn = document.getElementById('hamburgerBtn');
+    const menu = document.getElementById('dropdownMenu');
+    if (!btn || !menu) return;
+
+    const links = [...menu.querySelectorAll('a[role="menuitem"]')];
+
+    // Page active
+    const current = location.pathname.split('/').pop() || 'index.html';
+    links.forEach(a => {
+      if (a.getAttribute('href') === current) a.classList.add('active');
+      if (a.dataset.title && !a.title) a.title = a.dataset.title; // tooltip natif
+    });
+
+    // Ouvrir/fermer
+    const openMenu = () => {
+      menu.classList.add('open');
+      btn.setAttribute('aria-expanded', 'true');
+      // Focus sur le 1er lien pour l’accessibilité
+      setTimeout(() => links[0]?.focus(), 0);
+      document.addEventListener('click', outsideClose, { once: true });
+      document.addEventListener('keydown', onKey);
+    };
+    const closeMenu = () => {
+      menu.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+      document.removeEventListener('keydown', onKey);
+    };
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = menu.classList.contains('open');
+      isOpen ? closeMenu() : openMenu();
+    });
+
+    // Fermer si clic à l’extérieur
+    const outsideClose = (e) => {
+      if (!menu.contains(e.target) && e.target !== btn) closeMenu();
+    };
+
+    // Clavier: Esc ferme, flèches naviguent, Tab cycle dans le menu
+    function onKey(e) {
+      const focusIndex = links.indexOf(document.activeElement);
+      if (e.key === 'Escape') {
+        e.preventDefault(); closeMenu(); btn.focus();
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const i = (focusIndex + 1) % links.length;
+        links[i]?.focus();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const i = (focusIndex - 1 + links.length) % links.length;
+        links[i]?.focus();
+      }
+    }
+  })();	
+  </script>
 </body>
-</html>
