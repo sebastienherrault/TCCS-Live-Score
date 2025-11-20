@@ -2,48 +2,49 @@
 <html lang="fr">
 <head>
 	<meta charset="UTF-8" name="viewport" content="width=device-width,initial-scale=1.0">
+	<link rel="stylesheet" href="TCCS_Common.css">
 	<link rel="stylesheet" href="TCCS_Live_Saisie.css">
 	<title>Saisie Scores - TCCS</title>
 	<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
-  <!-- Garde visuelle tant qu’on n’a pas validé l’auth -->
-  <div id="guard">Chargement…</div>
+	<!-- Garde visuelle tant qu’on n’a pas validé l’auth -->
+	<div id="guard">Chargement…</div>
 
-<!-- Bouton hamburger + menu déroulant -->
-<div class="hamburger-wrapper">
-  <button id="hamburgerBtn"
-          class="hamburger-btn"
-          aria-haspopup="true"
-          aria-expanded="false"
-          aria-controls="dropdownMenu"
-          aria-label="Ouvrir le menu">
-    <!-- Icône 3 traits -->
-    <span aria-hidden="true" class="hamburger-icon">
-      <span></span><span></span><span></span>
-    </span>
-  </button>
+	<!-- Bouton hamburger + menu déroulant -->
+	<div class="hamburger-wrapper">
+	  <button id="hamburgerBtn"
+			  class="hamburger-btn"
+			  aria-haspopup="true"
+			  aria-expanded="false"
+			  aria-controls="dropdownMenu"
+			  aria-label="Ouvrir le menu">
+		<!-- Icône 3 traits -->
+		<span aria-hidden="true" class="hamburger-icon">
+		  <span></span><span></span><span></span>
+		</span>
+	  </button>
 
-  <nav id="dropdownMenu" class="dropdown" role="menu" aria-label="Menu principal">
-    <a href="index.html" role="menuitem" data-title="Accueil">🏠 Accueil</a>
-    <a href="TCCS_Live_Match.html" role="menuitem" data-title="Feuille de match">📋 Feuille de matchs</a>
-    <a href="TCCS_Live_Saisie.html" role="menuitem" data-title="Saisie des scores">🎾 Saisie des Scores</a>
-	<a href="TCCS_Live_Score.html" role="menuitem" data-title="Affichage des scores">📺 Affichages des Scores</a>
-  </nav>
-</div>
+	  <nav id="dropdownMenu" class="dropdown" role="menu" aria-label="Menu principal">
+		<a href="index.html" role="menuitem" data-title="Accueil">🏠 Accueil</a>
+		<a href="TCCS_Live_Match.html" role="menuitem" data-title="Feuille de match">📋 Feuille de matchs</a>
+		<a href="TCCS_Live_Saisie.html" role="menuitem" data-title="Saisie des scores">🎾 Saisie des Scores</a>
+		<a href="TCCS_Live_Score.html" role="menuitem" data-title="Affichage des scores">📺 Affichages des Scores</a>
+	  </nav>
+	</div>
 
-  <div class="overlay" id="app">
-	<header>
-	  <div class="brand" role="banner">
-		<img src="TCCS.JPG" alt="Logo TCCS" class="img-fluid mb-4" style="max-width: 100px;">
-		<div class="brand-title"><b>🏆 TCCS Score Live - Saisie des scores</b></div>
-	  </div>
-      <div class="userbox">
-        <span id="whoami" style="opacity:.8; margin-right:8px;"></span>
-        <button id="logout" class="btn">Se déconnecter</button>
-      </div>	  
-	</header>
-  </div>
+	<div class="overlay" id="app">
+		<header>
+		  <div class="brand" role="banner">
+			<img src="TCCS.JPG" alt="Logo TCCS" class="img-fluid mb-4" style="max-width: 100px;">
+			<div class="brand-title"><b>🏆 TCCS Score Live - Saisie des scores</b></div>
+		  </div>
+		  <div class="userbox">
+			<span id="whoami" style="opacity:.8; margin-right:8px;"></span>
+			<button id="logout" class="btn">Se déconnecter</button>
+		  </div>	  
+		</header>
+	</div>
 <main>
 <div id="forms"></div>
 <script type="module">
@@ -93,7 +94,6 @@
 	  }
 	});
 </script>
-
 <script type="module">
 	// Import the functions you need from the SDKs you need
 	import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
@@ -604,5 +604,6 @@
 	}
   </script>
 </main>
+<footer>© 2025 TCCS Score Live– Application web locale</footer>
 </body>
 </html>
