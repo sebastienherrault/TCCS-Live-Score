@@ -1,57 +1,12 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>Saisie Scores - TCCS</title>
- <meta name="color-scheme" content="light dark" />
-<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-<style>
-    :root {
-      --bg: #0b1320; --fg: #e8eefc; --muted: #aeb8d0; --accent: #2f80ed;
-      --ok: #2ecc71; --warn: #f39c12; --err: #e74c3c; --card: #141b2d; --border: #25314e;
-      --menu-bg: #0b1220; --menu-fg: #e5e7eb; --menu-accent: #60a5fa; --menu-border: #1f2937; --shadow: 0 8px 24px rgba(0,0,0,.25);
-    }
-    html, body { margin:0; padding:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: var(--bg); color: var(--fg); }
-    a { color: var(--fg); text-decoration: none; } a:hover { text-decoration: underline; }
-    header { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 80px; border-bottom: 1px solid var(--border); background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0)); }
-    .brand { display:flex; align-items:center; gap:12px; }
-    .brand-logo { inline-size:40px; block-size:40px; background:#1d2a44; border-radius:8px; display:grid; place-items:center; font-weight:700; }
-    .brand-title { font-size: 40px; font-weight:100; letter-spacing:.2px; }
-    .userbox { display:flex; align-items:center; gap:12px; }
-    .user-email { color: var(--muted); font-size:.95rem; }
-	.btn { background: #aeb8d0; color:white; border:2px solid var(--border); padding:10px 14px; border-radius:8px; cursor:pointer; font-weight:600; }
-     main { max-inline-size: 900px; margin: 32px auto; padding-inline: 20px; }
-    .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px; }
-    .card { background: var(--card); border:1px solid var(--border); padding:18px; border-radius:14px; display:flex; flex-direction:column; gap:10px; cursor: pointer; }
-    .card h3 { margin:0; font-size:1.05rem; color: #F2F5FF}
-    .card p { margin:0; color: var(--muted); font-size:.95rem; }
-	footer { text-align:center; color:var(--muted); padding:30px 16px; border-top:1px solid var(--border); margin-top: 40px; }
-
-	#no-match-message { font-size: 3em; font-style: oblique; font-weight: bold; color: #aeb8d0; text-align: center; margin-top: 40px; animation: blink 1s infinite; }
-	@keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
-
-	.hamburger-wrapper { position: fixed; top: 12px; left: 12px; z-index: 1100; }
-
-	/* Bouton hamburger rond et discret */
-	.hamburger-btn { width: 40px; height: 40px; border-radius: 999px; border: 1px solid var(--menu-border); background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: grid; place-items: center; cursor: pointer; color: var(--menu-fg); }
-	.hamburger-btn:focus-visible { outline: 2px solid var(--menu-accent); outline-offset: 2px; }
-
-	/* Icône 3 traits */
-	.hamburger-icon { display: inline-block; width: 18px; }
-	.hamburger-icon span { display: block; height: 2px; background: var(--menu-fg); margin: 3px 0; width: 100%; border-radius: 2px; transition: transform .2s ease, opacity .2s ease; }
-
-	/* Animation en X quand menu ouvert */
-	.hamburger-btn[aria-expanded="true"] .hamburger-icon span:nth-child(1) { transform: translateY(5px) rotate(45deg); }
-	.hamburger-btn[aria-expanded="true"] .hamburger-icon span:nth-child(2) { opacity: 0; }
-	.hamburger-btn[aria-expanded="true"] .hamburger-icon span:nth-child(3) { transform: translateY(-5px) rotate(-45deg); }
-
-	/* Menu déroulant */
-	.dropdown { position: absolute; top: 48px; left: 0; min-width: 220px; background: var(--menu-bg); color: var(--menu-fg); border: 1px solid var(--menu-border); border-radius: 10px; padding: 8px; box-shadow: var(--shadow);  opacity: 0; transform: translateY(-6px); pointer-events: none; transition: opacity .15s ease, transform .15s ease; }
-	.dropdown.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
-	.dropdown a { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; color: inherit; text-decoration: none; white-space: nowrap; }
-	.dropdown a:hover, .dropdown a:focus { background: #111827; outline: none; }
-	.dropdown a.active { border: 1px solid #12325f; background: #0b254a; color: var(--menu-accent); }
-</style>
+	<meta charset="UTF-8">
+	<title>Saisie Scores - TCCS</title>
+	<meta name="color-scheme" content="light dark" />
+	<link rel="stylesheet" href="TCCS_Common.css">
+	<link rel="stylesheet" href="TCCS_Live_Match.css">
+	<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 	<!-- Garde visuelle tant qu’on n’a pas validé l’auth -->
