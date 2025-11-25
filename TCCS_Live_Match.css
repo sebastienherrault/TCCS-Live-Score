@@ -1,6 +1,7 @@
-.btn { background: #aeb8d0; color:white; border:2px solid var(--border); padding:10px 14px; border-radius:8px; cursor:pointer; font-weight:600; }
-.card { background: var(--card); border:1px solid var(--border); padding:18px; border-radius:14px; display:flex; flex-direction:column; gap:10px; cursor: pointer; }
-.card h3 { margin:0; font-size:1.05rem; color: #F2F5FF}
-.card p { margin:0; color: var(--muted); font-size:.95rem; }
 
-    
+/* ===== TCCS_Live_Match.css (Overrides) ===== */
+
+/* Spécifique aux cartes/boutons de la page Match (optionnel) */
+.card { cursor: pointer; }              /* interaction visuelle */
+.card h3 { color: #F2F5FF; }            /* déjà dans common, rappel possible */
+.btn { border: 2px solid var(--border); } /* renforce le contour sur cette page */
