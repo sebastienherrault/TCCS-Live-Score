@@ -61,57 +61,11 @@
     </div>
 <div id="forms"></div>
 <script type="module">
-	import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-	import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-	// (Optionnel) si tu utilises Firestore pour tes matchs :
-	// import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-	// Your web app's Firebase configuration
-	// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-	const firebaseConfig = {
-		apiKey: "AIzaSyBk63PQRrlg6647pGw5Dof5-I-LCLexJrg",
-		authDomain: "tccs-live-score.firebaseapp.com",
-		databaseURL: "https://tccs-live-score-default-rtdb.europe-west1.firebasedatabase.app",
-		projectId: "tccs-live-score",
-		storageBucket: "tccs-live-score.firebasestorage.app",
-		messagingSenderId: "142574190845",
-		appId: "1:142574190845:web:654340ce971abe7cf8fe94",
-		measurementId: "G-E2Q9H3JRDG"
-	};
-
-
-	const app = initializeApp(firebaseConfig);
-	const auth = getAuth(app);
-
-	const guard = document.getElementById('guard');
-	const appRoot = document.getElementById('app');
-	const whoami = document.getElementById('whoami');
-
-	onAuthStateChanged(auth, (user) => {
-	  if (!user) {
-		// Non connecté -> retour au login
-		window.location.href = "index.html";
-		return;
-	  }
-	  // Connecté -> révèle l’app
-	  guard.style.display = 'none';
-	  appRoot.style.display = 'block';
-	  whoami.textContent = user.email || 'Connecté';
-	});
-
-	document.getElementById('logout').addEventListener('click', async () => {
-	  try {
-		await signOut(auth);
-	  } finally {
-		window.location.href = "index.html";
-	  }
-	});
-</script>
-<script type="module">
 	// Import the functions you need from the SDKs you need
-	import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-	import { getDatabase, ref, set, get, remove } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
- 
+	import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+	import { getDatabase, ref, set, get, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+	import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+	
 	// TODO: Add SDKs for Firebase products that you want to use
 	// https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -130,12 +84,38 @@
 
 	// Initialize Firebase
 	const app = initializeApp(firebaseConfig);
+	const auth = getAuth(app);
 	const db = getDatabase(app);
 	const matchesRef = ref(db, 'matches');
 	const excelFileRef = ref(db, 'excelFile');
 	const updatesRef = ref(db, 'lastUpdate');
-	
+	const guard = document.getElementById('guard');
+	const appRoot = document.getElementById('app');
+	const whoami = document.getElementById('whoami');
+
 	let matches = [];
+
+	// Check le statut d'authentification utilisateur
+	onAuthStateChanged(auth, (user) => {
+	  if (!user) {
+		// Non connecté -> retour au login
+		window.location.href = "index.html";
+		return;
+	  }
+	  // Connecté -> révèle l’app
+	  guard.style.display = 'none';
+	  appRoot.style.display = 'block';
+	  whoami.textContent = user.email || 'Connecté';
+	  // console.log(user);
+	});
+	document.getElementById('logout').addEventListener('click', async () => {
+	  try {
+		await signOut(auth);
+	  } finally {
+		window.location.href = "index.html";
+	  }
+	});
+
 
 	// Lecture des données dans la base Firebase
 	async function ReadFromFirebase() {
@@ -326,4 +306,3 @@
 <footer>© 2025 TCCS Score Live– Application web locale</footer>
 </body>
 </html>
-
