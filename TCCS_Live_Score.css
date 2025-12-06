@@ -4,7 +4,7 @@
 /* Fond de page + overlay */
 body {
   font-family: var(--font-sans);
-  background-image: url('screen_page.jpg');
+  background-image: url('assets/images/screen_page.jpg');
   background-size: cover; background-position: center;
   color: #fff; margin: 0;
 }
@@ -22,7 +22,7 @@ body {
 /* Scoreboard */
 .scoreboard {
   position: relative;
-  background-image: url('tennis-field.jpg');
+  background-image: url('assets/images/tennis-field.jpg');
   background-size: cover; background-position: center; background-repeat: no-repeat;
   border: 4px solid #ffffff; padding: 20px; border-radius: var(--radius);
   font-family: 'Courier New', monospace; color: #fff;
