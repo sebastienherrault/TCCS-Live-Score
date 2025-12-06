@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="fr">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="color-scheme" content="light dark" />
+		<link rel="stylesheet" href="../../Common.css">
+		<link rel="stylesheet" href="Live_Match.css">
+		<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+		<script type="module" src="Live_Match.js"></script>
+		<title>TCCS - Feuille de matchs</title>
+	</head>
+	<body>
+		<!-- Garde visuelle tant qu’on n’a pas validé l’auth -->
+		<div id="guard">Chargement…</div>
+
+		<!-- Bouton hamburger + menu déroulant -->
+		<div class="hamburger-wrapper">
+		<button id="hamburgerBtn"
+				class="hamburger-btn"
+				aria-haspopup="true"
+				aria-expanded="false"
+				aria-controls="dropdownMenu"
+				aria-label="Ouvrir le menu">
+			<!-- Icône 3 traits -->
+			<span aria-hidden="true" class="hamburger-icon">
+			<span></span><span></span><span></span>
+			</span>
+		</button>
+
+		<nav id="dropdownMenu" class="dropdown" role="menu" aria-label="Menu principal">
+			<a href="../../index.html" role="menuitem" data-title="Accueil">🏠 Accueil</a>
+			<a href="Live_Match.html" role="menuitem" data-title="Feuille de match">📋 Feuille de matchs</a>
+			<a href="../Live_Saisie/Live_Saisie.html" role="menuitem" data-title="Saisie des scores">🎾 Saisie des Scores</a>
+			<a href="../Live_Score/Live_Score.html" role="menuitem" data-title="Affichage des scores">📺 Affichages des Scores</a>
+		</nav>
+		</div>
+
+		<div class="overlay" id="app">
+			<header>
+				<div class="brand" role="banner">
+					<img src="../../assets/images/TCCS.jpg" alt="Logo TCCS" class="img-fluid mb-4" style="max-width: 100px;">
+					<div class="brand-title"><b>🏆 TCCS Score Live - Gestion des matchs de la journée</b></div>
+				</div>
+				<div class="userbox">
+					<span id="whoami" style="opacity:.8; margin-right:8px;"></span>
+					<button id="logout" class="btn">Se déconnecter</button>
+				</div>
+			</header>
+		</div>
+		<main>
+			<div class="grid" aria-label="Navigation">
+			<button id="openExcel" class="card">
+				<h3>📝 Charger Feuille de Matchs</h3>
+				<p>Importer la liste des matchs (Excel).</p>
+				<input type="file" id="fileInput" accept=".xlsx,.xls,.xlsm" style="display:none" />
+			</button>
+			<button id="deleteBtn" class="card">
+				<h3>⌨️ Supprimer Feuille de Matchs</h3>
+				<p> Effacer la liste des matchs (Tout sera perdu!).</p>
+			</button>
+			</div>
+			<div id="forms"></div>
+		</main>
+		<footer>© 2025 TCCS Score Live– Application web locale</footer>
+	</body>
+</html>
