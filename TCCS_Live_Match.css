@@ -1,7 +1,0 @@
-
-/* ===== TCCS_Live_Match.css (Overrides) ===== */
-
-/* Spécifique aux cartes/boutons de la page Match (optionnel) */
-.card { cursor: pointer; }              /* interaction visuelle */
-.card h3 { color: #F2F5FF; }            /* déjà dans common, rappel possible */
-.btn { border: 2px solid var(--border); } /* renforce le contour sur cette page */

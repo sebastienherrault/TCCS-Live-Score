@@ -1,57 +1,4 @@
-<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="TCCS_Common.css">
-  <link rel="stylesheet" href="TCCS_Live_Score.css">
-  <!-- <link rel="stylesheet" href="TCCS_Live_Score_desktop.css" media="screen and (min-width: 1000px)"> -->
-  <title>TCCS - Score Live</title>
-</head>
-<body>
-	<!-- Bouton hamburger + menu déroulant -->
-	<div class="hamburger-wrapper">
-	  <button id="hamburgerBtn"
-			  class="hamburger-btn"
-			  aria-haspopup="true"
-			  aria-expanded="false"
-			  aria-controls="dropdownMenu"
-			  aria-label="Ouvrir le menu">
-		<!-- Icône 3 traits -->
-		<span aria-hidden="true" class="hamburger-icon">
-		  <span></span><span></span><span></span>
-		</span>
-	  </button>
 
-	  <nav id="dropdownMenu" class="dropdown" role="menu" aria-label="Menu principal">
-		<a href="index.html" role="menuitem" data-title="Accueil">🏠 Accueil</a>
-		<a href="TCCS_Live_Match.html" role="menuitem" data-title="Feuille de match">📋 Feuille de matchs</a>
-		<a href="TCCS_Live_Saisie.html" role="menuitem" data-title="Saisie des scores">🎾 Saisie des Scores</a>
-		<a href="TCCS_Live_Score.html" role="menuitem" data-title="Affichage des scores">📺 Affichages des Scores</a>
-	  </nav>
-	</div>
-
-	<div class="overlay" id="app">
-		<header>
-		  <div class="brand" role="banner">
-			<img src="TCCS.JPG" alt="Logo TCCS" class="img-fluid mb-4" style="max-width: 100px;">
-			<div class="brand-title"><b>🏆 TCCS Score Live</b></div>
-		  </div>
-		  <div id="header-clock" class="header-clock">Chargement...</div>  
-		</header>
-		<div class="no-match-message" id="no-match"></div>
-		<div class="columns">
-			<div class="left-column" id="match-status"></div>
-			<div class="right-column">
-			  <div id="scoreboards"></div>
-			</div>
-		</div>
-		<div class="sponsor-banner">
-			<img src="Bandeau_Sponsor.jpg" alt="Sponsors TCCS">
-		</div>
-		<footer>© 2025 TCCS Score Live– Application web locale</footer>
-	</div>
-<script type="module">
 	import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 	import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 	import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -396,6 +343,3 @@
 	document.addEventListener('DOMContentLoaded', () => { 
 		loadMatches(); 
 	});
-</script>
-</body>
-</html>
